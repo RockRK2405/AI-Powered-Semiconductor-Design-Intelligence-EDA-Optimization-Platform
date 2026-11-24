@@ -69,4 +69,5 @@ calibrated uncertainty · evidence-linked diagnostics · honest limitations.
 
 ## License
 
-To be decided (see `TODO.md` P0-D1).
+MIT. See [`LICENSE`](LICENSE). ORFS designs and PDKs used in experiments keep their own licenses
+(tracked per design, TODO P0-R4).

@@ -23,9 +23,42 @@ def make_run_id(
     return f"{design_id}_{stable_hash(overrides)[:8]}_r{repeat_index}{suffix}"
 
 
-def classify_status(exit_code: int | None, timed_out: bool) -> str:
+DOCKER_DAEMON_ERROR = 125  # `docker run` itself failed (daemon gone, bad flags, ...)
+
+
+def orfs_design_id(design_config: str) -> str:
+    """``./designs/<platform>/<design>/config.mk`` -> ``<design>_<platform>``."""
+    parts = design_config.split("/")
+    if len(parts) != 5 or parts[1] != "designs":
+        raise ValueError(f"not an ORFS design config path: {design_config!r}")
+    return f"{parts[3]}_{parts[2]}"
+
+
+def orfs_design_record(design_config: str, design_group: str | None = None) -> DesignRecord:
+    """Design record for an ORFS design; the group defaults to the design directory name."""
+    design_id = orfs_design_id(design_config)  # validates the path shape
+    parts = design_config.split("/")
+    return DesignRecord(
+        design_id=design_id,
+        name=parts[3],
+        platform=parts[2],
+        origin="orfs",
+        source=f"ORFS {design_config}",
+        design_group=design_group or parts[3],
+        license=None,  # TODO(P0-R4): fill from flow/designs/src/<design>/LICENSE
+    )
+
+
+def classify_status(exit_code: int | None, timed_out: bool, budget_capped: bool = False) -> str:
+    """Map a tool result to a run status.
+
+    ``budget_capped``: the timeout was lowered below the sweep's own timeout to fit a chunk
+    budget, so a timeout is our doing ("aborted"), not a property of the design.
+    """
+    if exit_code == DOCKER_DAEMON_ERROR:
+        return "aborted"
     if timed_out or exit_code == TIMEOUT_EXIT_CODE:
-        return "timeout"
+        return "aborted" if budget_capped else "timeout"
     return "success" if exit_code == 0 else "failed"
 
 
@@ -63,6 +96,8 @@ def execute_and_record(
     cpuset: str | None = None,
     skip_existing: bool = True,
     target: str = "finish",
+    budget_capped: bool = False,
+    design_dir: Path | None = None,
 ) -> RunRecord:
     run_id = make_run_id(design.design_id, overrides, repeat_index, target)
     if skip_existing:
@@ -81,8 +116,15 @@ def execute_and_record(
     job = OrfsJob(design_config=job_config, variant=run_id, overrides=overrides, target=target)
     started = datetime.now(UTC)
     log.info("run %s: %s %s", run_id, job_config, overrides or "")
-    result = run_orfs(job, work_dir=work_dir, image=image, timeout_s=timeout_s, cpuset=cpuset)
-    status = classify_status(result.exit_code, result.timed_out)
+    result = run_orfs(
+        job,
+        work_dir=work_dir,
+        image=image,
+        timeout_s=timeout_s,
+        cpuset=cpuset,
+        design_dir=design_dir,
+    )
+    status = classify_status(result.exit_code, result.timed_out, budget_capped)
 
     run = RunRecord(
         run_id=run_id,

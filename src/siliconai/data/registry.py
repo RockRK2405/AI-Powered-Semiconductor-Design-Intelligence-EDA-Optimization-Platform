@@ -164,6 +164,12 @@ class Registry:
             )
         )
 
+    def designs(self) -> list[sqlite3.Row]:
+        return list(self._conn.execute("SELECT * FROM designs ORDER BY design_id"))
+
+    def all_steps(self) -> list[sqlite3.Row]:
+        return list(self._conn.execute("SELECT * FROM steps ORDER BY run_id, step"))
+
     def steps(self, run_id: str) -> list[sqlite3.Row]:
         return list(self._conn.execute("SELECT * FROM steps WHERE run_id = ?", (run_id,)))
 

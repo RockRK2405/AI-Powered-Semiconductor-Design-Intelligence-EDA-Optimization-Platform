@@ -36,7 +36,10 @@ ORFS_PATH = ":".join(
     ]
 )
 
-DESIGN_CONFIG_RE = re.compile(r"^\./designs/[A-Za-z0-9_]+/[A-Za-z0-9_]+/config\.mk$")
+# Platform and design directory names: alphanumerics, "_" and "-" (e.g. ihp-sg13g2, aes-block),
+# never starting with "-".
+_NAME = r"[A-Za-z0-9_][A-Za-z0-9_\-]{0,63}"
+DESIGN_CONFIG_RE = re.compile(rf"^\./designs/{_NAME}/{_NAME}/config\.mk$")
 VARIANT_RE = re.compile(r"^[A-Za-z0-9_\-]{1,64}$")
 VALUE_RE = re.compile(r"^[A-Za-z0-9_.\-]{1,64}$")
 
@@ -58,6 +61,25 @@ ALLOWED_OVERRIDES = frozenset(
 )
 
 TIMEOUT_EXIT_CODE = 124  # coreutils `timeout`
+GENERATED_PREFIX = "sai_"  # generated designs; can never shadow a bundled ORFS design
+_MOUNT_PATH_RE = re.compile(r"^/[A-Za-z0-9_./\-]+$")
+
+
+def design_mount_args(job: OrfsJob, design_dir: Path) -> list[str]:
+    """``--mount`` arguments that place a generated design at ``flow/designs/<plat>/<name>``.
+
+    Read-only, only for ``sai_*`` designs, and only for plain absolute paths (no characters
+    that could alter the comma-separated ``--mount`` syntax).
+    """
+    if not job.design.startswith(GENERATED_PREFIX):
+        raise ValueError("only generated (sai_*) designs may be mounted")
+    src = Path(design_dir).resolve()
+    if not src.is_dir() or not _MOUNT_PATH_RE.match(str(src)) or ".." in src.parts:
+        raise ValueError(f"invalid design directory: {design_dir}")
+    if not (src / "config.mk").is_file():
+        raise ValueError(f"no config.mk in {design_dir}")
+    target = f"{ORFS_FLOW}/designs/{job.platform}/{job.design}"
+    return ["--mount", f"type=bind,source={src},target={target},readonly"]
 
 
 @dataclass(frozen=True)
@@ -89,7 +111,17 @@ class OrfsJob:
         return self.design_config.split("/")[3]
 
     def log_dir(self, work_dir: Path) -> Path:
-        return Path(work_dir) / "logs" / self.platform / self.design / self.variant
+        """Log directory of this run.
+
+        ORFS names the directory after DESIGN_NICKNAME, which can differ from the design's
+        directory name (it defaults to DESIGN_NAME). The variant is unique per run, so if the
+        directory-name guess does not exist we look the variant up under the platform.
+        """
+        guess = Path(work_dir) / "logs" / self.platform / self.design / self.variant
+        if guess.is_dir():
+            return guess
+        matches = sorted((Path(work_dir) / "logs" / self.platform).glob(f"*/{self.variant}"))
+        return matches[0] if len(matches) == 1 else guess
 
 
 def build_docker_argv(
@@ -99,6 +131,7 @@ def build_docker_argv(
     image: str,
     inner_timeout_s: int,
     cpuset: str | None = None,
+    design_dir: Path | None = None,
 ) -> list[str]:
     """Build the `docker run` argument list for one ORFS job."""
     if inner_timeout_s <= 0:
@@ -125,6 +158,8 @@ def build_docker_argv(
     ]
     if cpuset:
         argv += ["--cpuset-cpus", cpuset]
+    if design_dir is not None:
+        argv += design_mount_args(job, design_dir)
     argv += [
         image,
         "timeout",
@@ -152,12 +187,18 @@ def run_orfs(
     image: str,
     timeout_s: int,
     cpuset: str | None = None,
+    design_dir: Path | None = None,
 ) -> ToolResult:
     """Execute one ORFS job. Timing per step is parsed separately from ORFS logs."""
     work_dir = Path(work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
     argv = build_docker_argv(
-        job, work_dir=work_dir, image=image, inner_timeout_s=timeout_s, cpuset=cpuset
+        job,
+        work_dir=work_dir,
+        image=image,
+        inner_timeout_s=timeout_s,
+        cpuset=cpuset,
+        design_dir=design_dir,
     )
     console_log = work_dir / "console" / f"{job.variant}.log"
     # Outer timeout is a backstop for the inner coreutils timeout.

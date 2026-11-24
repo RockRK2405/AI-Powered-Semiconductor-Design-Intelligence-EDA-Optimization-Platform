@@ -16,7 +16,9 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 _ID_PATTERN = r"^[A-Za-z0-9_\-]{1,64}$"
 
 DesignOrigin = Literal["orfs", "generated", "external"]
-RunStatus = Literal["pending", "running", "success", "failed", "timeout"]
+# "aborted": stopped by *our* infrastructure (sweep budget cap, Docker daemon error), so it
+# says nothing about the design and is retried by the next sweep chunk.
+RunStatus = Literal["pending", "running", "success", "failed", "timeout", "aborted"]
 Scalar = float | int | str
 
 

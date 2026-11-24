@@ -8,11 +8,11 @@ import shutil
 import subprocess
 import sys
 from collections.abc import Sequence
+from pathlib import Path
 
 from siliconai.config import Settings
 from siliconai.data.registry import Registry
-from siliconai.data.schemas import DesignRecord
-from siliconai.eda.collect import execute_and_record
+from siliconai.eda.collect import execute_and_record, orfs_design_record
 from siliconai.eda.orfs import image_digest
 from siliconai.eda.runner import gnu_time_available
 from siliconai.logging_utils import setup_logging
@@ -60,19 +60,10 @@ def _parse_overrides(pairs: Sequence[str]) -> dict[str, str]:
 def cmd_orfs_run(settings: Settings, args: argparse.Namespace) -> int:
     settings.ensure_dirs()
     overrides = _parse_overrides(args.set or [])
-    parts = args.design_config.split("/")
-    if len(parts) != 5:
-        raise SystemExit("design config must look like ./designs/<platform>/<design>/config.mk")
-    platform, design = parts[2], parts[3]
-    record = DesignRecord(
-        design_id=f"{design}_{platform}",
-        name=design,
-        platform=platform,
-        origin="orfs",
-        source=f"ORFS {args.design_config}",
-        design_group=args.design_group or design,
-        license=None,  # TODO(P0-R4): fill from flow/designs/src/<design>/LICENSE
-    )
+    try:
+        record = orfs_design_record(args.design_config, args.design_group)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
     failures = 0
     with Registry(settings.db_path) as reg:
         for rep in range(args.repeat_start, args.repeat_start + args.repeat):
@@ -92,6 +83,50 @@ def cmd_orfs_run(settings: Settings, args: argparse.Namespace) -> int:
             print(f"{run.run_id}\t{run.status}\t{run.wall_s or 0:.1f}s")
             failures += run.status != "success"
     return 1 if failures else 0
+
+
+def cmd_sweep(settings: Settings, args: argparse.Namespace) -> int:
+    from siliconai.sweep.preflight import docker_config_reader
+    from siliconai.sweep.runner import run_sweep
+    from siliconai.sweep.spec import load_spec
+
+    settings.ensure_dirs()
+    spec = load_spec(args.spec)
+    with Registry(settings.db_path) as reg:
+        report = run_sweep(
+            spec,
+            reg,
+            work_dir=settings.runs_dir,
+            image=settings.orfs_image,
+            budget_s=args.budget_min * 60,
+            config_reader=docker_config_reader(settings.orfs_image),
+            prune=not args.no_prune,
+            dry_run=args.dry_run,
+            gen_root=settings.home / "generated",
+        )
+    print(f"sweep {spec.name}: {report.summary()}")
+    for item in report.rejected_preflight:
+        print(f"  preflight rejected {item}")
+    return 1 if report.stopped_reason else 0
+
+
+def cmd_export(settings: Settings, args: argparse.Namespace) -> int:
+    from siliconai.data.exchange import export_jsonl
+
+    with Registry(settings.db_path) as reg:
+        counts = export_jsonl(reg, args.out)
+    print(f"exported {counts} to {args.out}")
+    return 0
+
+
+def cmd_import(settings: Settings, args: argparse.Namespace) -> int:
+    from siliconai.data.exchange import import_jsonl
+
+    settings.ensure_dirs()
+    with Registry(settings.db_path) as reg:
+        counts = import_jsonl(reg, args.src)
+    print(f"imported {counts} from {args.src}")
+    return 0
 
 
 def cmd_runs(settings: Settings) -> int:
@@ -125,6 +160,17 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     sub.add_parser("runs", help="per-stage summary of recorded runs")
 
+    sweep = sub.add_parser("sweep", help="run one budgeted, resumable chunk of a sweep spec")
+    sweep.add_argument("spec", type=Path, help="sweep spec YAML")
+    sweep.add_argument("--budget-min", type=float, required=True, help="chunk wall budget")
+    sweep.add_argument("--dry-run", action="store_true", help="plan only; run nothing")
+    sweep.add_argument("--no-prune", action="store_true", help="keep results/ and objects/")
+
+    exp = sub.add_parser("export", help="export the registry as JSONL")
+    exp.add_argument("--out", type=Path, required=True)
+    imp = sub.add_parser("import", help="load registry JSONL (e.g. committed data)")
+    imp.add_argument("--src", type=Path, required=True)
+
     args = parser.parse_args(argv)
     settings = Settings.from_env()
     setup_logging(settings.log_level)
@@ -134,6 +180,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_orfs_run(settings, args)
     if args.command == "runs":
         return cmd_runs(settings)
+    if args.command == "sweep":
+        return cmd_sweep(settings, args)
+    if args.command == "export":
+        return cmd_export(settings, args)
+    if args.command == "import":
+        return cmd_import(settings, args)
     parser.error(f"unknown command {args.command}")
     return 2
 
