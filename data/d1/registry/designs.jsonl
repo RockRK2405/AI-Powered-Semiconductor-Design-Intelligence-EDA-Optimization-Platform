@@ -9,22 +9,30 @@
 {"design_group":"gcd","design_id":"gcd_ihp-sg13g2","license":null,"name":"gcd","origin":"orfs","platform":"ihp-sg13g2","source":"ORFS ./designs/ihp-sg13g2/gcd/config.mk"}
 {"design_group":"gcd","design_id":"gcd_nangate45","license":null,"name":"gcd","origin":"orfs","platform":"nangate45","source":"ORFS ./designs/nangate45/gcd/config.mk"}
 {"design_group":"gcd","design_id":"gcd_sky130hd","license":null,"name":"gcd","origin":"orfs","platform":"sky130hd","source":"ORFS ./designs/sky130hd/gcd/config.mk"}
+{"design_group":"ibex","design_id":"ibex_asap7","license":null,"name":"ibex","origin":"orfs","platform":"asap7","source":"ORFS ./designs/asap7/ibex/config.mk"}
 {"design_group":"ibex","design_id":"ibex_gf180","license":null,"name":"ibex","origin":"orfs","platform":"gf180","source":"ORFS ./designs/gf180/ibex/config.mk"}
 {"design_group":"ibex","design_id":"ibex_ihp-sg13g2","license":null,"name":"ibex","origin":"orfs","platform":"ihp-sg13g2","source":"ORFS ./designs/ihp-sg13g2/ibex/config.mk"}
 {"design_group":"ibex","design_id":"ibex_nangate45","license":null,"name":"ibex","origin":"orfs","platform":"nangate45","source":"ORFS ./designs/nangate45/ibex/config.mk"}
 {"design_group":"jpeg","design_id":"jpeg_nangate45","license":null,"name":"jpeg","origin":"orfs","platform":"nangate45","source":"ORFS ./designs/nangate45/jpeg/config.mk"}
+{"design_group":"picorv32","design_id":"picorv32_nangate45","license":null,"name":"picorv32","origin":"orfs","platform":"nangate45","source":"ORFS ./designs/nangate45/picorv32/config.mk"}
 {"design_group":"riscv32i","design_id":"riscv32i_asap7","license":null,"name":"riscv32i","origin":"orfs","platform":"asap7","source":"ORFS ./designs/asap7/riscv32i/config.mk"}
+{"design_group":"riscv32i","design_id":"riscv32i_gf180","license":null,"name":"riscv32i","origin":"orfs","platform":"gf180","source":"ORFS ./designs/gf180/riscv32i/config.mk"}
+{"design_group":"riscv32i","design_id":"riscv32i_sky130hd","license":null,"name":"riscv32i","origin":"orfs","platform":"sky130hd","source":"ORFS ./designs/sky130hd/riscv32i/config.mk"}
 {"design_group":"gen_addtree","design_id":"sai_addtree_i16_w16_nangate45","license":"MIT","name":"sai_addtree_i16_w16","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen addtree {\"inputs\": 16, \"width\": 16}"}
 {"design_group":"gen_addtree","design_id":"sai_addtree_i32_w16_nangate45","license":"MIT","name":"sai_addtree_i32_w16","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen addtree {\"inputs\": 32, \"width\": 16}"}
 {"design_group":"gen_alu","design_id":"sai_alu_w32_nangate45","license":"MIT","name":"sai_alu_w32","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen alu {\"width\": 32}"}
 {"design_group":"gen_alu","design_id":"sai_alu_w64_nangate45","license":"MIT","name":"sai_alu_w64","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen alu {\"width\": 64}"}
 {"design_group":"gen_crc","design_id":"sai_crc_w32_nangate45","license":"MIT","name":"sai_crc_w32","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen crc {\"width\": 32}"}
+{"design_group":"gen_crc","design_id":"sai_crc_w64_nangate45","license":"MIT","name":"sai_crc_w64","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen crc {\"width\": 64}"}
+{"design_group":"gen_crc","design_id":"sai_crc_w8_nangate45","license":"MIT","name":"sai_crc_w8","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen crc {\"width\": 8}"}
 {"design_group":"gen_fifo","design_id":"sai_fifo_d16_w16_nangate45","license":"MIT","name":"sai_fifo_d16_w16","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen fifo {\"depth\": 16, \"width\": 16}"}
 {"design_group":"gen_fifo","design_id":"sai_fifo_d32_w32_nangate45","license":"MIT","name":"sai_fifo_d32_w32","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen fifo {\"depth\": 32, \"width\": 32}"}
+{"design_group":"gen_fifo","design_id":"sai_fifo_d8_w8_nangate45","license":"MIT","name":"sai_fifo_d8_w8","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen fifo {\"depth\": 8, \"width\": 8}"}
 {"design_group":"gen_fsm","design_id":"sai_fsm_i2_o4_s1_s32_nangate45","license":"MIT","name":"sai_fsm_i2_o4_s1_s32","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen fsm {\"inputs\": 2, \"outputs\": 4, \"seed\": 1, \"states\": 32}"}
 {"design_group":"gen_fsm","design_id":"sai_fsm_i3_o8_s3_s128_nangate45","license":"MIT","name":"sai_fsm_i3_o8_s3_s128","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen fsm {\"inputs\": 3, \"outputs\": 8, \"seed\": 3, \"states\": 128}"}
 {"design_group":"gen_mac","design_id":"sai_mac_l2_w8_nangate45","license":"MIT","name":"sai_mac_l2_w8","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen mac {\"lanes\": 2, \"width\": 8}"}
 {"design_group":"gen_mac","design_id":"sai_mac_l4_w8_nangate45","license":"MIT","name":"sai_mac_l4_w8","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen mac {\"lanes\": 4, \"width\": 8}"}
+{"design_group":"gen_mac","design_id":"sai_mac_l8_w8_nangate45","license":"MIT","name":"sai_mac_l8_w8","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen mac {\"lanes\": 8, \"width\": 8}"}
 {"design_group":"gen_mult","design_id":"sai_mult_w16_nangate45","license":"MIT","name":"sai_mult_w16","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen mult {\"width\": 16}"}
 {"design_group":"gen_mult","design_id":"sai_mult_w32_nangate45","license":"MIT","name":"sai_mult_w32","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen mult {\"width\": 32}"}
 {"design_group":"gen_mult","design_id":"sai_mult_w8_nangate45","license":"MIT","name":"sai_mult_w8","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen mult {\"width\": 8}"}
