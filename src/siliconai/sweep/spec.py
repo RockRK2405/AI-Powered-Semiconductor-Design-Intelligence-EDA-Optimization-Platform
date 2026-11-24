@@ -46,6 +46,9 @@ class DesignSpec(_Strict):
     group: str = Field(pattern=_ID)
     n_configs: int = Field(default=1, ge=1, le=500, description="including the default config")
     expected_s: float | None = Field(default=None, gt=0, description="runtime guess if unmeasured")
+    default_repeats: int | None = Field(
+        default=None, ge=1, le=10, description="overrides the spec-level default_repeats"
+    )
 
     @model_validator(mode="before")
     @classmethod
@@ -161,7 +164,8 @@ def plan(spec: SweepSpec, fixed_floorplan: dict[str, bool]) -> list[PlannedRun]:
     for d in spec.designs:
         space = design_space(spec, fixed_floorplan.get(d.config, False))
         for overrides in sample_configs(space, d.n_configs, [spec.seed, d.config]):
-            repeats = spec.default_repeats if not overrides else 1
+            base = d.default_repeats if d.default_repeats is not None else spec.default_repeats
+            repeats = base if not overrides else 1
             for rep in range(repeats):
                 run_id = make_run_id(d.design_id, overrides, rep, spec.target)
                 runs.append(PlannedRun(d, overrides, rep, run_id))

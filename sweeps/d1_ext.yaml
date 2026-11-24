@@ -1,0 +1,21 @@
+# D1 v1 "extension": expensive designs (>= ~20 min per run on this VM), mostly default config.
+# They widen the size range (bigger designs, slower PDK) at high cost: run after d1_core.
+name: d1_ext
+target: finish
+timeout_s: 3000
+seed: 20261124
+space:
+  CORE_UTILIZATION: ["30", "40", "50", "60"]
+  PLACE_DENSITY_LB_ADDON: ["0.1", "0.2", "0.3"]
+  GPL_TIMING_DRIVEN: ["0", "1"]
+  GPL_ROUTABILITY_DRIVEN: ["0", "1"]
+  TNS_END_PERCENT: ["5", "100"]
+  SYNTH_HIERARCHICAL: ["0", "1"]
+designs:
+  - {config: ./designs/sky130hd/aes/config.mk, group: aes, n_configs: 2, expected_s: 1600}
+  - {config: ./designs/sky130hd/ibex/config.mk, group: ibex, n_configs: 2, expected_s: 1500}
+  - {config: ./designs/nangate45/tinyRocket/config.mk, group: tinyRocket, n_configs: 2, expected_s: 1500}
+  - {config: ./designs/asap7/jpeg/config.mk, group: jpeg, n_configs: 1, expected_s: 1500}
+  - {config: ./designs/gf180/jpeg/config.mk, group: jpeg, n_configs: 1, expected_s: 1500}
+  - {config: ./designs/ihp-sg13g2/jpeg/config.mk, group: jpeg, n_configs: 1, expected_s: 1500}
+  - {config: ./designs/sky130hd/jpeg/config.mk, group: jpeg, n_configs: 1, expected_s: 1500}

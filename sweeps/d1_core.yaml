@@ -1,0 +1,66 @@
+# D1 v1 "core" sweep (Phase 2). Composition chosen from measured costs (Phase 1 pilot + probe):
+#   - every ORFS design whose default run costs <= ~15 min on this VM, on every platform where
+#     it exists, so the same RTL appears on several platforms (one design group per RTL);
+#   - 7 generated families x 3 sizes on nangate45 (one design group per family).
+# Estimated cost ~7.5-8 h sequential => ~5 chunks of ~100 min. Expensive designs (aes/ibex on
+# sky130hd, jpeg off nangate45, tinyRocket) are left to d1_ext.yaml.
+# expected_s values are scheduling guesses only (measured times replace them after one run).
+name: d1_core
+target: finish
+timeout_s: 1800
+seed: 20261124
+default_repeats: 1
+space:
+  CORE_UTILIZATION: ["30", "40", "50", "60"]
+  PLACE_DENSITY_LB_ADDON: ["0.1", "0.2", "0.3"]
+  GPL_TIMING_DRIVEN: ["0", "1"]
+  GPL_ROUTABILITY_DRIVEN: ["0", "1"]
+  TNS_END_PERCENT: ["5", "100"]
+  SYNTH_HIERARCHICAL: ["0", "1"]
+designs:
+  # --- tiny ORFS designs: many configs + a repeated default (noise floor at scale)
+  - {config: ./designs/nangate45/gcd/config.mk, group: gcd, n_configs: 8, default_repeats: 2, expected_s: 45}
+  - {config: ./designs/sky130hd/gcd/config.mk, group: gcd, n_configs: 8, default_repeats: 2, expected_s: 45}
+  - {config: ./designs/asap7/gcd/config.mk, group: gcd, n_configs: 8, default_repeats: 2, expected_s: 70}
+  - {config: ./designs/gf180/gcd/config.mk, group: gcd, n_configs: 8, default_repeats: 2, expected_s: 55}
+  - {config: ./designs/ihp-sg13g2/gcd/config.mk, group: gcd, n_configs: 8, default_repeats: 2, expected_s: 75}
+  - {config: ./designs/ihp-sg13g2/spi/config.mk, group: spi, n_configs: 8, default_repeats: 2, expected_s: 75}
+  - {config: ./designs/asap7/uart/config.mk, group: uart, n_configs: 6, default_repeats: 2, expected_s: 65}
+  # --- small/medium ORFS designs
+  - {config: ./designs/nangate45/aes/config.mk, group: aes, n_configs: 4, expected_s: 330}
+  - {config: ./designs/asap7/aes/config.mk, group: aes, n_configs: 4, expected_s: 380}
+  - {config: ./designs/gf180/aes/config.mk, group: aes, n_configs: 4, expected_s: 450}
+  - {config: ./designs/ihp-sg13g2/aes/config.mk, group: aes, n_configs: 4, expected_s: 450}
+  - {config: ./designs/nangate45/ibex/config.mk, group: ibex, n_configs: 4, expected_s: 330}
+  - {config: ./designs/asap7/ibex/config.mk, group: ibex, n_configs: 3, expected_s: 500}
+  - {config: ./designs/gf180/ibex/config.mk, group: ibex, n_configs: 3, expected_s: 500}
+  - {config: ./designs/ihp-sg13g2/ibex/config.mk, group: ibex, n_configs: 3, expected_s: 500}
+  - {config: ./designs/asap7/riscv32i/config.mk, group: riscv32i, n_configs: 3, expected_s: 400}
+  - {config: ./designs/gf180/riscv32i/config.mk, group: riscv32i, n_configs: 3, expected_s: 400}
+  - {config: ./designs/ihp-sg13g2/riscv32i/config.mk, group: riscv32i, n_configs: 3, expected_s: 400}
+  - {config: ./designs/sky130hd/riscv32i/config.mk, group: riscv32i, n_configs: 3, expected_s: 400}
+  - {config: ./designs/nangate45/dynamic_node/config.mk, group: dynamic_node, n_configs: 4, expected_s: 400}
+  - {config: ./designs/nangate45/picorv32/config.mk, group: picorv32, n_configs: 4, expected_s: 400}
+  - {config: ./designs/nangate45/jpeg/config.mk, group: jpeg, n_configs: 3, expected_s: 950}
+  # --- generated RTL (origin=generated), nangate45; group = gen_<family>
+  - {generate: {family: mult, params: {width: 8}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: mult, params: {width: 16}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: mult, params: {width: 32}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: addtree, params: {inputs: 8, width: 8}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: addtree, params: {inputs: 16, width: 16}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: addtree, params: {inputs: 32, width: 16}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: mac, params: {lanes: 2, width: 8}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: mac, params: {lanes: 4, width: 8}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: mac, params: {lanes: 8, width: 8}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: fifo, params: {depth: 8, width: 8}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: fifo, params: {depth: 16, width: 16}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: fifo, params: {depth: 32, width: 32}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: fsm, params: {states: 16, inputs: 2, outputs: 4, seed: 2}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: fsm, params: {states: 32, inputs: 2, outputs: 4, seed: 1}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: fsm, params: {states: 128, inputs: 3, outputs: 8, seed: 3}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: crc, params: {width: 8}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: crc, params: {width: 32}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: crc, params: {width: 64}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: alu, params: {width: 8}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: alu, params: {width: 32}}, n_configs: 3, expected_s: 200}
+  - {generate: {family: alu, params: {width: 64}}, n_configs: 3, expected_s: 200}

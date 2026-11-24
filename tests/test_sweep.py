@@ -322,3 +322,20 @@ def test_sweep_materializes_and_mounts_generated_designs(tmp_path):
         assert design_dir == tmp_path / "gen" / "nangate45" / "sai_alu_w8"
         (row,) = reg.designs()
         assert row["origin"] == "generated" and row["design_group"] == "gen_alu"
+
+
+def test_per_design_default_repeats_override():
+    spec = make_spec(
+        default_repeats=1,
+        designs=[
+            {
+                "config": "./designs/nangate45/gcd/config.mk",
+                "group": "gcd",
+                "n_configs": 2,
+                "default_repeats": 3,
+            }
+        ],
+    )
+    runs = plan(spec, {})
+    assert sum(1 for r in runs if not r.overrides) == 3
+    assert sum(1 for r in runs if r.overrides) == 1

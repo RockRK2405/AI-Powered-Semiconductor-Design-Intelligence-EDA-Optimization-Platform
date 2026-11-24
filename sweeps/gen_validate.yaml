@@ -1,0 +1,22 @@
+# One small design per generator family, default flow config: checks that every family goes
+# through the full ORFS flow before the main D1 sweep relies on it. These runs are kept as
+# D1 rows (same machine, image and concurrency).
+name: gen_validate
+target: finish
+timeout_s: 1200
+seed: 1
+designs:
+  - generate: {family: mult, params: {width: 16}}
+    expected_s: 150
+  - generate: {family: addtree, params: {inputs: 16, width: 16}}
+    expected_s: 150
+  - generate: {family: mac, params: {lanes: 4, width: 8}}
+    expected_s: 150
+  - generate: {family: fifo, params: {depth: 16, width: 16}}
+    expected_s: 150
+  - generate: {family: fsm, params: {states: 32, inputs: 2, outputs: 4, seed: 1}}
+    expected_s: 150
+  - generate: {family: crc, params: {width: 32}}
+    expected_s: 150
+  - generate: {family: alu, params: {width: 32}}
+    expected_s: 150

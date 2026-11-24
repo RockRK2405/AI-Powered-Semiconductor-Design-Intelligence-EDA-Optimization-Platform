@@ -2,11 +2,12 @@
 
 **AI-Powered Semiconductor Design Intelligence & EDA Optimization Platform**
 
-> **Project status: Phase 1 complete (foundation, toolchain, pilot).** Implemented: a hardened
-> runner for EDA tools, an OpenROAD-flow-scripts (ORFS) wrapper running in a pinned Docker
-> image, parsers for ORFS per-step timing/memory and METRICS2.1 metrics, a SQLite run registry,
-> and a 16-run measured pilot ([`data/pilot_phase1/`](data/pilot_phase1/)). **No ML models exist
-> yet.** Everything else below is planned work.
+> **Project status: Phase 2 in progress (data engine + runtime intelligence).** Phase 1 delivered
+> a hardened EDA runner, a digest-pinned ORFS Docker wrapper, log/metric parsers, a SQLite run
+> registry and a measured pilot ([`data/pilot_phase1/`](data/pilot_phase1/)). Phase 2 has added a
+> resumable sweep engine, RTL generators, a leakage-safe dataset builder, conformal prediction and
+> pre-registered experiments ([`docs/experiments.md`](docs/experiments.md)). Dataset D1 is being
+> collected. **No model results are reported yet.**
 
 ## What this project is
 
@@ -56,9 +57,11 @@ Set `SILICONAI_ORFS_IMAGE` to the digest above to reproduce our tool versions ex
 | [`DECISIONS.md`](DECISIONS.md) | Architecture decision records |
 | [`PROGRESS.md`](PROGRESS.md) / [`TODO.md`](TODO.md) | Progress log and backlog |
 | [`research/`](research/) | Literature review, existing solutions, gaps, novelty, datasets, toolchain, feasibility, references |
-| [`src/siliconai/`](src/siliconai/) | Package: `eda/` (runner, ORFS wrapper, parsers), `data/` (schemas, registry), `cli.py` |
+| [`src/siliconai/`](src/siliconai/) | Package: `eda/` (runner, ORFS wrapper, parsers), `data/` (registry, JSONL exchange, dataset), `sweep/`, `rtlgen/`, `uncertainty/`, `runtime_intelligence/`, `cli.py` |
 | [`tests/`](tests/) | Unit tests + EDA integration tests (marker `eda`) |
-| [`scripts/`](scripts/) | Pilot run script and report |
+| [`sweeps/`](sweeps/) | Sweep specs for dataset D1 |
+| [`docs/experiments.md`](docs/experiments.md) | Pre-registered protocols for E1–E4 |
+| [`scripts/`](scripts/) | Pilot, probe, chunk runner, dataset freeze, experiment runner |
 | [`data/pilot_phase1/`](data/pilot_phase1/) | Measured pilot results (CSV + report), regenerable with `scripts/pilot_report.py` |
 | [`interview_prep/`](interview_prep/) | Explanations grounded in what is actually built |
 

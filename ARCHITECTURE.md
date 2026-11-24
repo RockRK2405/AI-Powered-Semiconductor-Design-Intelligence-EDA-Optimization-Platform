@@ -1,7 +1,8 @@
 # SiliconAI — Architecture (proposed)
 
-**Status:** design only. Nothing here is implemented yet. Components are created in the phase that
-needs them (no empty placeholder folders).
+**Status:** partly implemented. Built so far: `eda/`, `data/`, `sweep/`, `rtlgen/`, `uncertainty/`,
+`runtime_intelligence/` (Phases 1–2). Everything else is design only. Components are created in the
+phase that needs them (no empty placeholder folders).
 
 ## 1. Principles
 
@@ -106,12 +107,13 @@ flowchart LR
 
 ```
 src/siliconai/
-  config.py, logging.py            # Phase 1
-  eda/        runner.py, orfs.py, yosys.py, metrics.py     # Phase 1–2
-  data/       registry.py (SQLite), datasets.py (Parquet), schemas.py
-  features/   stage_features.py, horizons.py
-  runtime_intelligence/            # Phase 2
-  uncertainty/ conformal.py, ood.py
+  config.py, logging_utils.py, cli.py          # Phase 1 (built)
+  eda/        runner.py, orfs.py, orfs_parse.py, collect.py, host.py   # Phase 1 (built)
+  data/       registry.py, schemas.py, exchange.py (JSONL), dataset.py # Phase 1–2 (built)
+  sweep/      spec.py, preflight.py, runner.py                         # Phase 2 (built)
+  rtlgen/     generators.py, orfs_design.py                            # Phase 2 (built)
+  uncertainty/ conformal.py                    # Phase 2 (built); ood.py folded into experiments
+  runtime_intelligence/ models.py, evaluate.py, experiments.py         # Phase 2 (built)
   log_intelligence/                # Phase 3
   rtl_intelligence/                # Phase 4
   ppa_prediction/                  # Phase 5
@@ -119,7 +121,8 @@ src/siliconai/
   physical_design_risk/            # Phase 7
   decision/                        # Phase 8
   copilot/                         # Phase 9
-api/  dashboard/  scripts/  tests/  docs/  research/
+sweeps/ (YAML specs)  data/ (committed results)  experiments/ (JSON records)
+scripts/  tests/  docs/  research/  interview_prep/
 ```
 
 This differs from the brainstorm layout in a few places. Those changes are recorded as ADRs: the shared

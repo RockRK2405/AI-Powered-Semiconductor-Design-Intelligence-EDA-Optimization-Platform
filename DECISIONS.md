@@ -92,3 +92,30 @@ Status values: **Proposed** (awaiting your review) · **Accepted** · **Supersed
   step, take max peak memory. GNU time (`eda/runner.py`) is used for tools we run directly on the host.
 - **Trade-offs:** we depend on ORFS's log format; a regex unit test on real log excerpts guards it,
   and a step with no timing line is stored with NULL timing rather than guessed.
+
+## ADR-012 — scikit-learn HistGradientBoosting instead of XGBoost
+- **Status:** Accepted (Phase 2, 2026-11-24).
+- **Context:** ADR-005 chose gradient-boosted trees; D1 has hundreds of rows, not millions.
+- **Alternatives:** XGBoost, LightGBM.
+- **Choice:** `sklearn.ensemble.HistGradientBoostingRegressor` (native NaN handling, quantile loss
+  for CQR). No extra dependency.
+- **Trade-offs:** fewer tuning knobs; XGBoost can be added as a cross-check if HGB looks limiting.
+
+## ADR-013 — Generated designs are bind-mounted read-only into the ORFS image
+- **Status:** Accepted (Phase 2).
+- **Context:** ORFS expects designs under `flow/designs/<platform>/<name>/` inside the image.
+- **Choice:** `rtlgen` writes `config.mk` + SDC + RTL on the host. The run mounts that one
+  directory read-only at its ORFS path. Only `sai_*` names may be mounted (never shadows a
+  bundled design), and only plain absolute paths (no `--mount` syntax injection).
+- **Trade-offs:** v1 supports nangate45 only, reusing gcd's fine power grid for small blocks.
+
+## ADR-014 — Collection in ≤ 2 h chunks; committed JSONL is the durable registry
+- **Status:** Accepted (Phase 2).
+- **Context:** this container stops background jobs (dockerd included) after 2 h and is
+  reclaimed when idle. SQLite in the git-ignored workspace is not durable.
+- **Choice:** each chunk restarts dockerd, runs a budgeted `siliconai sweep`, then
+  `siliconai export` writes sorted JSONL to `data/d1/registry/` and the chunk's ORFS logs to
+  `data/d1/logs/<chunk>.tar.gz`, and both are committed. `siliconai import` restores the registry
+  in a fresh container. Runs whose labels were contaminated are removed with `siliconai forget`
+  and logged in `data/d1/excluded_runs.jsonl`.
+- **Trade-offs:** git holds data (a few MB). This is acceptable at this scale; move to object storage if it grows.
