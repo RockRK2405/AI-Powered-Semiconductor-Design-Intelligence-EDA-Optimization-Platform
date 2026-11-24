@@ -2,9 +2,10 @@
 
 **AI-Powered Semiconductor Design Intelligence & EDA Optimization Platform**
 
-> **Project status: Phase 0 — research & strategy.** There is no platform code yet.
-> This README describes the plan, not implemented features. Nothing below should be read
-> as a result.
+> **Project status: Phase 1 — foundation & toolchain.** Implemented so far: a hardened
+> runner for EDA tools, an OpenROAD-flow-scripts (ORFS) wrapper running in a pinned Docker
+> image, parsers for ORFS per-step timing/memory and METRICS2.1 metrics, and a SQLite run
+> registry. **No ML models exist yet.** Everything else below is planned work.
 
 ## What this project is
 
@@ -20,13 +21,30 @@ SiliconAI is a planned intelligence layer on top of an **open-source RTL-to-GDS 
 - prioritize verification regression tests;
 - combine all of this into evidence-grounded recommendations and, eventually, a copilot.
 
-## Proposed research contribution (pending review)
+## Research contribution (approved direction; results pending)
 
 *Uncertainty-aware, cross-stage prediction of open-flow cost and risk, evaluated on unseen
 designs*, plus a **fault-injected, labelled corpus of open-EDA failure logs**. See
 [`research/04_novelty_analysis.md`](research/04_novelty_analysis.md) for the hypotheses
 (H1–H5) and for what would falsify them. We do not claim this is "first": a systematic
 literature check is still in progress.
+
+## Quickstart (Phase 1)
+
+Requirements: Linux, Python ≥ 3.11, Docker with a running daemon, GNU `time`.
+
+```bash
+python3 -m venv .venv && . .venv/bin/activate
+pip install -e ".[dev]"
+docker pull openroad/orfs@sha256:620c13d94b80290ccaa6d6d7fbaef9632bdb06ba7e6aedb88da845159b840c09
+siliconai doctor                     # check toolchain
+siliconai orfs-run --design-config ./designs/nangate45/gcd/config.mk   # ~1 min
+siliconai runs                       # per-stage wall time / CPU / peak memory
+pytest -q                            # unit + (if image present) end-to-end tests
+```
+
+Set `SILICONAI_ORFS_IMAGE` to the digest above to reproduce our tool versions exactly
+(see `.env.example`).
 
 ## Repository map (current)
 
@@ -37,6 +55,10 @@ literature check is still in progress.
 | [`DECISIONS.md`](DECISIONS.md) | Architecture decision records |
 | [`PROGRESS.md`](PROGRESS.md) / [`TODO.md`](TODO.md) | Progress log and backlog |
 | [`research/`](research/) | Literature review, existing solutions, gaps, novelty, datasets, toolchain, feasibility, references |
+| [`src/siliconai/`](src/siliconai/) | Package: `eda/` (runner, ORFS wrapper, parsers), `data/` (schemas, registry), `cli.py` |
+| [`tests/`](tests/) | Unit tests + EDA integration tests (marker `eda`) |
+| [`scripts/`](scripts/) | Pilot run script and report |
+| [`interview_prep/`](interview_prep/) | Explanations grounded in what is actually built |
 
 ## Principles
 

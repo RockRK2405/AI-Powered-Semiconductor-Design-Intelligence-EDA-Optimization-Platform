@@ -1,0 +1,4 @@
+Elapsed time: 0:00.40[h:]min:sec. CPU time: user 0.32 sys 0.08 (99%). Peak memory: 50596KB.
+Log                    Ext     Elapsed      CPU     CPU/ Peak Mem sha1sum
+                                     s        s  Elapsed       MB [0:10)
+1_2_yosys              .v            0        0     1.00       49 6a8e3d96c6

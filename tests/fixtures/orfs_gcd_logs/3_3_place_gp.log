@@ -1,0 +1,6 @@
+write_db /work/results/nangate45/gcd/pilot_gcd_0/3_3_place_gp.odb
+Elapsed time: 0:01.05[h:]min:sec. CPU time: user 0.96 sys 0.35 (124%). Peak memory: 265592KB.
+Log                    Ext     Elapsed      CPU     CPU/ Peak Mem sha1sum
+                                     s        s  Elapsed       MB [0:10)
+3_3_place_gp           .odb          1        1     1.25      259 15c6f3d555
+3_3_place_gp           .sdc                                       94157332ad

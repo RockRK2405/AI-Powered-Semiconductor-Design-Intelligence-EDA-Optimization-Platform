@@ -77,13 +77,13 @@ flowchart TB
     COP -->|queries| DB
 ```
 
-## 4. Core data model (SQLite, first version)
+## 4. Core data model (SQLite, implemented in Phase 1: `src/siliconai/data/registry.py`)
 
 | Table | Key columns |
 |---|---|
-| `designs` | design_id, name, origin (`orfs`/`generated`/`external`), source_hash, design_group, license |
-| `runs` | run_id, design_id, platform, config_json, config_hash, host_fingerprint, tool_versions_json, concurrency, injected_fault (nullable), status, started_at |
-| `stages` | run_id, stage (`synth`/`floorplan`/`place`/`cts`/`route`/`finish`), wall_s, cpu_s, peak_rss_mb, exit_code, metrics_json, log_path |
+| `designs` | design_id, name, platform, origin (`orfs`/`generated`/`external`), source, design_group, license |
+| `runs` | run_id, design_id, config_json, config_hash, tool_image (digest), host_json, concurrency, repeat_index, injected_fault (nullable), status, exit_code, wall_s, started_at |
+| `steps` | run_id, step (ORFS step, e.g. `3_3_place_gp`), stage (`synth`/`floorplan`/`place`/`cts`/`route`/`finish`/`other`), wall_s, cpu_user_s, cpu_sys_s, peak_rss_mb, metrics_json (METRICS2.1 keys), log_path |
 | `log_events` | run_id, stage, line_no, template_id, severity, text_hash |
 | `predictions` | pred_id, model_id, run_id, target, horizon, point, lo, hi, abstain, created_at |
 | `models` | model_id, task, algo, params_json, dataset_hash, git_sha, metrics_json |

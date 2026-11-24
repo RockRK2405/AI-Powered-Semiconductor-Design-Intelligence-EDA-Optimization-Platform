@@ -1,0 +1,6 @@
+write_db /work/results/nangate45/gcd/pilot_gcd_0/5_2_route.odb
+Elapsed time: 0:11.60[h:]min:sec. CPU time: user 13.97 sys 0.67 (126%). Peak memory: 575116KB.
+Log                    Ext     Elapsed      CPU     CPU/ Peak Mem sha1sum
+                                     s        s  Elapsed       MB [0:10)
+5_2_route              .odb         11       15     1.26      561 300db31be2
+5_2_route              .sdc                                       d53a5cbf6c

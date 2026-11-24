@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+build/
+dist/
+
+# Secrets / local config
+.env
+
+# Generated data (never committed; regenerate with scripts/)
+workspace/
+data/raw/
+data/processed/
+*.sqlite
+*.sqlite3
