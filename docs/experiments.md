@@ -120,3 +120,6 @@ record stores that hash. Adding runs creates D1 v2; results are never silently m
 | Date | Change | Reason |
 |---|---|---|
 | 2026-11-24 | Initial version | — |
+| 2026-11-24 (before any data or result) | §3: hyperparameters are selected by inner **GroupKFold(5)** on the training groups instead of inner LOGO | Compute: inner LOGO costs about 16× more fits per outer fold on a 4-vCPU VM; GroupKFold is still group-aware |
+| 2026-11-24 (before any data or result) | §4: the primary comparison is **HGB (the pre-declared main model, ADR-005) vs the better of B0/B1**. Ridge and RF are reported as secondary | Choosing the best of three candidates after seeing test errors would bias the comparison toward H1 |
+| 2026-11-24 (before any data or result) | §6: E3 uses HGB with fixed hyperparameters (learning_rate 0.1, max_leaf_nodes 15, min_samples_leaf 5) and CQR uses the same settings with quantile loss | Keeps E3's nested group-OOF calibration affordable; E3 is about calibration, not accuracy |

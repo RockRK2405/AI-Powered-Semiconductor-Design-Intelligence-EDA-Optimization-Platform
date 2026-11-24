@@ -154,6 +154,12 @@ class Registry:
                 ],
             )
 
+    def delete_run(self, run_id: str) -> bool:
+        """Remove a run and its steps (e.g. a label contaminated by CPU contention)."""
+        with self.transaction() as c:
+            cur = c.execute("DELETE FROM runs WHERE run_id = ?", (run_id,))
+        return cur.rowcount > 0
+
     # -- reads --------------------------------------------------------------------------
     def runs(self, design_id: str | None = None) -> list[sqlite3.Row]:
         if design_id is None:

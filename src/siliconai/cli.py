@@ -129,6 +129,22 @@ def cmd_import(settings: Settings, args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_forget(settings: Settings, args: argparse.Namespace) -> int:
+    """Delete a run so the next sweep chunk re-runs it; the reason is appended to a log."""
+    import json
+    from datetime import UTC, datetime
+
+    with Registry(settings.db_path) as reg:
+        if not reg.delete_run(args.run_id):
+            raise SystemExit(f"no such run: {args.run_id}")
+    args.log.parent.mkdir(parents=True, exist_ok=True)
+    entry = {"run_id": args.run_id, "reason": args.reason, "at": datetime.now(UTC).isoformat()}
+    with args.log.open("a") as fh:
+        fh.write(json.dumps(entry, sort_keys=True) + "\n")
+    print(f"forgot {args.run_id}; logged to {args.log}")
+    return 0
+
+
 def cmd_runs(settings: Settings) -> int:
     with Registry(settings.db_path) as reg:
         print(f"{'run_id':40s} {'stage':10s} {'wall_s':>9s} {'cpu_s':>9s} {'peak_MB':>8s}")
@@ -168,6 +184,10 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     exp = sub.add_parser("export", help="export the registry as JSONL")
     exp.add_argument("--out", type=Path, required=True)
+    fgt = sub.add_parser("forget", help="delete a run (it will be re-run) and log why")
+    fgt.add_argument("run_id")
+    fgt.add_argument("--reason", required=True)
+    fgt.add_argument("--log", type=Path, required=True, help="JSONL log of removed runs")
     imp = sub.add_parser("import", help="load registry JSONL (e.g. committed data)")
     imp.add_argument("--src", type=Path, required=True)
 
@@ -184,6 +204,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_sweep(settings, args)
     if args.command == "export":
         return cmd_export(settings, args)
+    if args.command == "forget":
+        return cmd_forget(settings, args)
     if args.command == "import":
         return cmd_import(settings, args)
     parser.error(f"unknown command {args.command}")

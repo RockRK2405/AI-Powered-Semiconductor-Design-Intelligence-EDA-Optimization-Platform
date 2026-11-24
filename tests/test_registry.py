@@ -122,3 +122,21 @@ def test_steps_from_real_logs():
     assert steps["3_3_place_gp"].wall_s == pytest.approx(1.05)
     assert steps["3_3_place_gp"].metrics["globalplace__design__nets"] == 726.0
     assert steps["5_2_route"].stage == "route"
+
+
+def test_delete_run_cascades_to_steps(tmp_path):
+    from siliconai.data.schemas import DesignRecord, RunRecord, StepRecord
+
+    with Registry(tmp_path / "r.sqlite") as reg:
+        reg.upsert_design(
+            DesignRecord(
+                design_id="d", name="d", platform="p", origin="orfs", source="s", design_group="g"
+            )
+        )
+        reg.record_run(
+            RunRecord(run_id="r1", design_id="d", status="success"),
+            [StepRecord(run_id="r1", step="1_synth", stage="synth", wall_s=1.0)],
+        )
+        assert reg.delete_run("r1") is True
+        assert reg.runs() == [] and reg.all_steps() == []
+        assert reg.delete_run("r1") is False
