@@ -9,7 +9,7 @@ Each item is specific and independently checkable. IDs are stable.
 - [ ] **P0-R3** Search for RTL-simulation regression prioritization with APFD (G5).
 - [ ] **P0-R4** Confirm licenses: ORFS designs we plan to use, EPFL benchmarks, IWLS'05, EDALearn, EDA-schema, CircuitNet.
 - [ ] **P0-R5** Fill in the "authors: see URL" entries in `research/08`.
-- [ ] **P0-D1** Decide on a repository LICENSE (your choice; MIT or Apache-2.0 are common for portfolio code).
+- [x] **P0-D1** Decide on a repository LICENSE (your choice; MIT or Apache-2.0 are common for portfolio code).
 
 ## Phase 1 — Foundation & toolchain (after approval)
 
@@ -25,18 +25,21 @@ Each item is specific and independently checkable. IDs are stable.
 - [x] **P1-10** `config.py` + structured logging.
 - [x] **P1-11** Start `interview_prep/project_explanation.md` from the real Phase 1 work.
 
-## Phase 2 — Data engine + Runtime intelligence (preview)
+## Phase 2 — Data engine + Runtime intelligence (in progress)
 
-- [ ] P2-01 Sweep spec (YAML) + resumable sweep runner with fixed concurrency.
-- [ ] P2-02 Parameterized RTL generators (adder, multiplier, FIFO, FSM, MAC array), tagged `generated`.
-- [ ] P2-03 D1 v1 dataset build with horizon-tagged features + leakage tests.
-- [ ] P2-04 `docs/experiments.md` protocols for E1–E4, written **before** training.
+- [x] P2-01 Sweep spec (YAML) + resumable sweep runner with fixed concurrency.
+- [x] P2-02 Parameterized RTL generators (adder, multiplier, FIFO, FSM, MAC array), tagged `generated`.
+- [x] P2-03 D1 v1 dataset build with horizon-tagged features + leakage tests.
+- [x] P2-04 `docs/experiments.md` protocols for E1–E4, written **before** training.
 - [ ] P2-05 Baselines, Ridge/RF/XGBoost; GroupKFold evaluation; bootstrap CIs.
-- [ ] P2-06 `uncertainty/conformal.py` (split, CQR, Mondrian) + coverage property tests.
+- [x] P2-06 `uncertainty/conformal.py` (split, CQR, Mondrian) + coverage property tests.
 - [ ] P2-07 Progressive (per-horizon) models; error and width vs. horizon.
 - [ ] P2-08 OOD score + abstention; risk–coverage curves.
-- [ ] P2-09 Minimal Streamlit page: run browser + prediction with interval.
-- [ ] P2-10 Sweep preflight: reject floorplan overrides (CORE_UTILIZATION, CORE_ASPECT_RATIO) on designs whose config fixes the floorplan (`FLOORPLAN_DEF`/`DIE_AREA`/`CORE_AREA`); found in the pilot.
-- [ ] P2-11 Prune large ORFS artifacts (`objects/`, `results/`) after metrics are parsed; keep logs, reports, JSON (≈175 MB/run otherwise).
-- [ ] P2-12 Chunked sweep execution (≤ 2 h per chunk) with a registry export after each chunk, so that an ephemeral container loses nothing.
-- [ ] P2-13 Dataset build excludes `failed` config-error runs from runtime training sets and tags them for the log corpus.
+- [x] P2-09 Minimal Streamlit page: run browser + prediction with interval.
+- [x] P2-10 Sweep preflight: reject floorplan overrides (CORE_UTILIZATION, CORE_ASPECT_RATIO) on designs whose config fixes the floorplan (`FLOORPLAN_DEF`/`DIE_AREA`/`CORE_AREA`); found in the pilot.
+- [x] P2-11 Prune large ORFS artifacts (`objects/`, `results/`) after metrics are parsed; keep logs, reports, JSON (≈175 MB/run otherwise).
+- [x] P2-12 Chunked sweep execution (≤ 2 h per chunk) with a registry export after each chunk, so that an ephemeral container loses nothing.
+- [x] P2-13 Dataset build excludes `failed` config-error runs from runtime training sets and tags them for the log corpus.
+- [ ] P2-14 Collect D1 v1: `sweeps/d1_core.yaml` (~157 runs, ~5 chunks), then `sweeps/d1_ext.yaml` if time permits.
+- [ ] P2-15 Freeze D1 v1 (`scripts/build_dataset.py`) and run E1–E4 (`scripts/run_experiments.py`); report the results, including negative ones.
+- [ ] P2-16 Generated designs on platforms other than nangate45 (needs per-platform PDN/SDC units).
