@@ -36,7 +36,7 @@ All from the 16-run pilot on a 4-vCPU cloud VM (`data/pilot_phase1/`). **Quote o
 - Full RTL→GDS flow time: gcd ~33 s, aes ~5 min, ibex ~5 min, jpeg ~14 min (Nangate45).
 - Same aes RTL on sky130hd: ~26 min, **5.3×** Nangate45, and 93% of it is routing. Platform is a
   first-order feature.
-- Routing is 54–93% of flow time; peak memory stays below 3 GB, so time, not memory, is the budget.
+- Routing is 55–93% of flow time; peak memory stays below 3 GB, so time, not memory, is the budget.
 - Noise floor over 3 identical repeats: whole-flow CV 0.7–1.7%, per stage ≤ 6%. So I don't
   claim per-stage errors below ~5%.
 - 6 of 16 pilot runs failed: utilization overrides conflict with designs that fix their floorplan

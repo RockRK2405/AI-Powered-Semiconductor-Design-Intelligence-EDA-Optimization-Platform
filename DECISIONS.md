@@ -92,6 +92,7 @@ Status values: **Proposed** (awaiting your review) · **Accepted** · **Supersed
   step, take max peak memory. GNU time (`eda/runner.py`) is used for tools we run directly on the host.
 - **Trade-offs:** we depend on ORFS's log format; a regex unit test on real log excerpts guards it,
   and a step with no timing line is stored with NULL timing rather than guessed.
+- **Amended by ADR-015:** a timing line that belongs to a nested sub-step is subtracted, not added.
 
 ## ADR-012 — scikit-learn HistGradientBoosting instead of XGBoost
 - **Status:** Accepted (Phase 2, 2026-11-24).
@@ -116,6 +117,40 @@ Status values: **Proposed** (awaiting your review) · **Accepted** · **Supersed
 - **Choice:** each chunk restarts dockerd, runs a budgeted `siliconai sweep`, then
   `siliconai export` writes sorted JSONL to `data/d1/registry/` and the chunk's ORFS logs to
   `data/d1/logs/<chunk>.tar.gz`, and both are committed. `siliconai import` restores the registry
-  in a fresh container. Runs whose labels were contaminated are removed with `siliconai forget`
-  and logged in `data/d1/excluded_runs.jsonl`.
+  in a fresh container. Runs whose labels were contaminated are removed with `siliconai forget`,
+  and parser fixes are applied with `siliconai reparse`; both append to `data/d1/corrections.jsonl`.
 - **Trade-offs:** git holds data (a few MB). This is acceptable at this scale; move to object storage if it grows.
+
+## ADR-015 — Nested sub-steps, clean re-runs, and correcting recorded data
+- **Status:** Accepted (Phase 2, 2026-11-24). Found while collecting D1 chunk c04.
+- **Context:** three defects surfaced while collecting D1.
+  - **(1) Nested timing counted twice.** ORFS runs the logic-equivalence check inside CTS
+    (`4_rsz_lec` in `4_1_cts`) and inside the final report (`6_final_lec` in `6_report`). It
+    echoes the check's `Elapsed time` line into the parent log, and the parent's own line already
+    includes that time. Summing per ADR-011 counted it twice, inflating cts and finish labels by up
+    to 2.4× on large designs. A survey of all 223 multi-line logs found only this pattern.
+  - **(2) A killed run leaves `5_2_route.tmp.log`.** The schema correctly rejected the step name,
+    which crashed chunk c04 before the run was recorded.
+  - **(3) Re-runs reused stale outputs.** Nothing cleared a variant's directories first, so a
+    re-run let ORFS `make` reuse an earlier attempt's results. One run (`aes_gf180_44136fa3_r0`,
+    left half-done by an interrupted probe) was recorded as a 29 s success with 591 s of stale
+    step logs.
+- **Choice:**
+  - A step whose (single) timing line appears in another step's log is nested in it. The parent
+    keeps its own lines minus the nested ones, so steps add up to the flow time exactly. If the
+    subtraction would go negative, the parser warns and sums instead.
+  - `X.tmp.log` is recorded as step X, unfinished (no timing). Other unrecognized names are skipped.
+  - If step records are rejected, the run is still recorded and the error is logged.
+  - Before each run, the sweep deletes that variant's `results/`, `objects/`, `logs/` and
+    `reports/`.
+  - Recorded data is corrected only by reproducible commands that append to a corrections log:
+    `siliconai reparse` re-parses runs from their original logs (run records untouched), and
+    `siliconai forget` removes a contaminated run so it is re-collected.
+- **Verification:** after the correction, Σ step time ≤ container wall time for every run (max
+  ratio 0.995; it was up to 1.12, or 20× for the stale run). Only the cts and finish labels changed
+  (median ×0.79 and ×0.89). The Phase 1 report was regenerated, and its corrected numbers are
+  marked in PROGRESS.md. No model had been trained, and D1 had not been frozen.
+- **Trade-offs:** nesting is detected from identical timing lines (wall, CPU and peak memory to
+  the recorded precision), not from ORFS internals. An exact coincidence between unrelated steps is
+  negligible, and the negative-remainder guard catches implausible cases.
+

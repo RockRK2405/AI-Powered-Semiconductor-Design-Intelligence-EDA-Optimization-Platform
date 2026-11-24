@@ -41,14 +41,23 @@ def build_report(reg: Registry) -> str:
         per_run[row["run_id"]][row["stage"]] = (row["wall_s"], row["peak_rss_mb"] or 0.0)
 
     lines = ["## 1. Cost per run (sequential, concurrency 1)", ""]
-    header = "| run | status | total wall s | " + " | ".join(STAGES) + " | peak MB |"
-    lines += [header, "|" + "---|" * (len(STAGES) + 4)]
+    lines += [
+        "Σ steps = sum of ORFS per-step wall times (tool time); container = the whole docker run",
+        "(adds image start-up and make overhead). Nested sub-steps are counted once (ADR-011).",
+        "",
+    ]
+    header = "| run | status | Σ steps wall s | container wall s | "
+    header += " | ".join(STAGES) + " | peak MB |"
+    lines += [header, "|" + "---|" * (len(STAGES) + 5)]
     for run_id, run in sorted(runs.items()):
         stages = per_run.get(run_id, {})
         total = sum(w for w, _ in stages.values())
         peak = max((m for _, m in stages.values()), default=0.0)
         cells = " | ".join(f"{stages[s][0]:.1f}" if s in stages else "–" for s in STAGES)
-        lines.append(f"| {run_id} | {run['status']} | {total:.1f} | {cells} | {peak:.0f} |")
+        wall = f"{run['wall_s']:.1f}" if run["wall_s"] is not None else "–"
+        lines.append(
+            f"| {run_id} | {run['status']} | {total:.1f} | {wall} | {cells} | {peak:.0f} |"
+        )
 
     # group identical configurations (design + config hash) across repeat indices
     groups: dict[tuple[str, str], list[str]] = defaultdict(list)

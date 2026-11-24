@@ -14,10 +14,13 @@ what they read, and they skip malformed values instead of raising.
 from __future__ import annotations
 
 import json
+import logging
 import math
 import re
 from dataclasses import dataclass
 from pathlib import Path
+
+log = logging.getLogger(__name__)
 
 MAX_LOG_BYTES = 64 * 1024 * 1024  # refuse to slurp pathological logs
 MAX_JSON_BYTES = 8 * 1024 * 1024
@@ -27,6 +30,11 @@ ELAPSED_RE = re.compile(
     r"CPU time: user (?P<user>\d+(?:\.\d+)?) sys (?P<sys>\d+(?:\.\d+)?) \(\d+%\)\. "
     r"Peak memory: (?P<peak>\d+)KB\."
 )
+# ORFS writes some steps (e.g. detailed route) to "<step>.tmp.log" and renames the file when the
+# step finishes; a run killed mid-step leaves the .tmp file behind. It is recorded as that step,
+# unfinished (no timing line).
+IN_PROGRESS_SUFFIX = ".tmp"
+STEP_NAME_RE = re.compile(r"[A-Za-z0-9_]{1,64}")  # same rule as StepRecord.step
 STEP_RE = re.compile(r"^(?P<stage>[1-6])_(?P<rest>[A-Za-z0-9_]+)$")
 
 STAGE_NAMES = {
@@ -72,29 +80,49 @@ def _read_text(path: Path, limit: int) -> str:
     return data.decode("utf-8", errors="replace")
 
 
-def parse_elapsed_lines(text: str) -> StepTiming | None:
-    """Aggregate all timed commands in one step log.
+def _line_values(m: re.Match) -> tuple[float, float, float, int]:
+    hours = int(m.group("h") or 0)
+    wall = hours * 3600 + int(m.group("m")) * 60 + float(m.group("s"))
+    return wall, float(m.group("user")), float(m.group("sys")), int(m.group("peak"))
 
-    A step may run several timed commands; wall and CPU times add up, peak memory is the
-    maximum (commands run sequentially within a step).
+
+def elapsed_lines(text: str) -> list[str]:
+    """The exact text of every timing line in a log, in order."""
+    return [m.group(0) for m in ELAPSED_RE.finditer(text)]
+
+
+def parse_elapsed_lines(text: str, nested: frozenset[str] = frozenset()) -> StepTiming | None:
+    """Aggregate the timed commands of one step log.
+
+    Commands of a step run one after another, so wall and CPU times add up and peak memory is
+    the maximum. Lines listed in ``nested`` belong to *another* step that ran inside one of this
+    step's commands: ORFS echoes the sub-step's output, timing line included, into the parent's
+    log (e.g. the ``4_rsz_lec`` equivalence check inside ``4_1_cts``). The enclosing command's
+    line already includes that time, so it is subtracted. The sub-step keeps its own
+    measurement, and the steps of a run then add up without double counting.
     """
-    wall = user = sys_ = 0.0
-    peak_kb = 0
-    n = 0
+    own: list[tuple[float, float, float, int]] = []
+    inner = [0.0, 0.0, 0.0]
     for m in ELAPSED_RE.finditer(text):
-        hours = int(m.group("h") or 0)
-        wall += hours * 3600 + int(m.group("m")) * 60 + float(m.group("s"))
-        user += float(m.group("user"))
-        sys_ += float(m.group("sys"))
-        peak_kb = max(peak_kb, int(m.group("peak")))
-        n += 1
-    if n == 0:
+        values = _line_values(m)
+        if m.group(0) in nested:
+            inner = [a + b for a, b in zip(inner, values[:3], strict=True)]
+        else:
+            own.append(values)
+    if not own:
         return None
-    return StepTiming(wall, user, sys_, peak_kb / 1024.0, n)
+    wall, user, sys_ = (sum(v[i] for v in own) for i in range(3))
+    if wall - inner[0] < 0 or user - inner[1] < 0 or sys_ - inner[2] < 0:
+        # Not actually enclosed: fall back to treating every line as a sequential command.
+        log.warning("nested timing exceeds its enclosing command; summing all lines instead")
+        wall, user, sys_ = wall + inner[0], user + inner[1], sys_ + inner[2]
+    else:
+        wall, user, sys_ = wall - inner[0], user - inner[1], sys_ - inner[2]
+    return StepTiming(wall, user, sys_, max(v[3] for v in own) / 1024.0, len(own))
 
 
-def parse_step_log(path: Path) -> StepTiming | None:
-    return parse_elapsed_lines(_read_text(path, MAX_LOG_BYTES))
+def parse_step_log(path: Path, nested: frozenset[str] = frozenset()) -> StepTiming | None:
+    return parse_elapsed_lines(_read_text(path, MAX_LOG_BYTES), nested)
 
 
 def parse_step_metrics(path: Path) -> dict[str, float | str]:
@@ -135,14 +163,37 @@ def collect_steps(log_dir: Path) -> list[StepOutput]:
         return []
     steps: dict[str, StepOutput] = {}
     names = {p.stem for p in log_dir.glob("*.log")} | {p.stem for p in log_dir.glob("*.json")}
+    # A step whose own timing line also appears in another step's log ran nested inside it.
+    lines = {
+        name: elapsed_lines(_read_text(log_dir / f"{name}.log", MAX_LOG_BYTES))
+        for name in names
+        if (log_dir / f"{name}.log").is_file()
+    }
+    # Candidate sub-steps: valid step names whose log holds exactly one timed command.
+    substep_line = {
+        name: found[0]
+        for name, found in lines.items()
+        if len(found) == 1 and STEP_NAME_RE.fullmatch(name.removesuffix(IN_PROGRESS_SUFFIX))
+    }
     for name in names:
+        step = name.removesuffix(IN_PROGRESS_SUFFIX)
+        if step != name and step in names:
+            continue  # the finished step's files win over a leftover in-progress log
+        if not STEP_NAME_RE.fullmatch(step):
+            continue  # not an ORFS step file; untrusted names never reach the registry
         log_path = log_dir / f"{name}.log"
         json_path = log_dir / f"{name}.json"
-        timing = parse_step_log(log_path) if log_path.is_file() else None
+        mine = lines.get(name, [])
+        nested = frozenset(
+            line for other, line in substep_line.items() if other != name and line in mine
+        )
+        if len(nested) >= len(mine):  # a parent must have a command of its own
+            nested = frozenset()
+        timing = parse_step_log(log_path, nested) if log_path.is_file() else None
         metrics = parse_step_metrics(json_path) if json_path.is_file() else {}
-        steps[name] = StepOutput(
-            step=name,
-            stage=stage_of(name),
+        steps[step] = StepOutput(
+            step=step,
+            stage=stage_of(step),
             timing=timing,
             metrics=metrics,
             log_path=log_path if log_path.is_file() else None,

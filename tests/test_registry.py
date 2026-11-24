@@ -140,3 +140,44 @@ def test_delete_run_cascades_to_steps(tmp_path):
         assert reg.delete_run("r1") is True
         assert reg.runs() == [] and reg.all_steps() == []
         assert reg.delete_run("r1") is False
+
+
+def test_reparse_run_replaces_steps_from_recorded_logs(tmp_path):
+    from siliconai.data.schemas import RunRecord, StepRecord
+    from siliconai.eda.collect import reparse_run
+
+    lec = "Elapsed time: 0:17.23[h:]min:sec. CPU time: user 17 sys 0 (99%). Peak memory: 1000KB."
+    cts = "Elapsed time: 1:14.01[h:]min:sec. CPU time: user 99 sys 1 (99%). Peak memory: 2000KB."
+    logs = tmp_path / "logs" / "r1"
+    logs.mkdir(parents=True)
+    (logs / "4_rsz_lec.log").write_text(lec + "\n")
+    (logs / "4_1_cts.log").write_text(f"{lec}\n{cts}\n")
+    with Registry(tmp_path / "r.sqlite") as reg:
+        reg.upsert_design(_design())
+        run = RunRecord(run_id="r1", design_id=_design().design_id, config={}, status="success")
+        old = [  # as the pre-fix parser recorded them: the nested LEC counted twice
+            StepRecord(
+                run_id="r1",
+                step="4_rsz_lec",
+                stage="cts",
+                wall_s=17.23,
+                log_path=str(logs / "4_rsz_lec.log"),
+            ),
+            StepRecord(
+                run_id="r1",
+                step="4_1_cts",
+                stage="cts",
+                wall_s=91.24,
+                log_path=str(logs / "4_1_cts.log"),
+            ),
+        ]
+        reg.record_run(run, old)
+        before, after = reparse_run(reg, "r1")
+        assert before == pytest.approx(108.47) and after == pytest.approx(74.01)
+        assert {s["step"]: s["wall_s"] for s in reg.steps("r1")} == pytest.approx(
+            {"4_rsz_lec": 17.23, "4_1_cts": 74.01 - 17.23}
+        )
+        assert reg.runs()[0]["status"] == "success"  # run record untouched
+        reg.record_run(run.model_copy(update={"run_id": "r2"}), [])
+        with pytest.raises(FileNotFoundError):
+            reparse_run(reg, "r2")

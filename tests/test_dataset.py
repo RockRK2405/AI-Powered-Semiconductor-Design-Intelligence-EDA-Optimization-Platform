@@ -71,7 +71,7 @@ def _registry(tmp_path, *, image="img@sha256:a", cpu="cpu-a", extra=()):
             status=status,
             tool_image=image,
             host={"cpu_model": cpu},
-            wall_s=10.0,
+            wall_s=1000.0,  # container wall >= sum of step times
         )
         steps = [
             StepRecord(
@@ -151,3 +151,16 @@ def test_content_hash_is_order_independent(tmp_path):
     changed = df.copy()
     changed.loc[0, "y__route__ln_wall"] += 0.01
     assert content_hash(changed) != content_hash(df)
+
+
+def test_build_refuses_runs_whose_steps_exceed_wall_time():
+    from siliconai.data.dataset import check_step_times
+
+    runs = [{"run_id": "ok", "wall_s": 100.0}, {"run_id": "stale", "wall_s": 29.0}]
+    steps = {
+        "ok": [{"wall_s": 60.0}, {"wall_s": 39.5}],
+        "stale": [{"wall_s": 300.0}, {"wall_s": None}],
+    }
+    check_step_times(runs[:1], steps)
+    with pytest.raises(ValueError, match="stale"):
+        check_step_times(runs, steps)

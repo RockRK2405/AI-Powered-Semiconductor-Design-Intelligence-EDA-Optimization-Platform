@@ -139,7 +139,36 @@ def execute_and_record(
         wall_s=result.wall_s,
         started_at=started,
     )
-    steps = steps_from_log_dir(run_id, job.log_dir(work_dir))
+    try:
+        steps = steps_from_log_dir(run_id, job.log_dir(work_dir))
+    except ValueError:  # includes pydantic ValidationError: never lose the run itself
+        log.exception("run %s: step records rejected; recording the run without steps", run_id)
+        steps = []
     registry.record_run(run, steps)
     log.info("run %s: %s in %.1fs, %d steps recorded", run_id, status, result.wall_s, len(steps))
     return run
+
+
+def recorded_log_dir(registry: Registry, run_id: str) -> Path | None:
+    """The ORFS log directory a run's steps were parsed from (None if it is not on disk)."""
+    dirs = {Path(s["log_path"]).parent for s in registry.steps(run_id) if s["log_path"]}
+    if len(dirs) != 1:
+        return None
+    (log_dir,) = dirs
+    return log_dir if log_dir.is_dir() and not log_dir.is_symlink() else None
+
+
+def reparse_run(registry: Registry, run_id: str) -> tuple[float | None, float | None]:
+    """Re-collect a recorded run's steps from its original logs with the current parser.
+
+    Returns the run's summed step wall time (before, after). Run records (status, wall time,
+    config) are not touched. Raises FileNotFoundError if the logs are not on disk.
+    """
+    log_dir = recorded_log_dir(registry, run_id)
+    if log_dir is None:
+        raise FileNotFoundError(f"logs of {run_id} are not available")
+    before = [s["wall_s"] for s in registry.steps(run_id) if s["wall_s"] is not None]
+    steps = steps_from_log_dir(run_id, log_dir)
+    registry.replace_steps(run_id, steps)
+    after = [s.wall_s for s in steps if s.wall_s is not None]
+    return (sum(before) if before else None, sum(after) if after else None)

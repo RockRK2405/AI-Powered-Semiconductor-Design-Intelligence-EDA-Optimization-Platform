@@ -51,25 +51,33 @@ Machine: this cloud container (Intel Xeon @ 2.30 GHz, 4 vCPU, 15.7 GB RAM). One 
 
 | Design | Platform | Runs | Flow wall s | Route share | Peak memory MB |
 |---|---|---|---|---|---|
-| gcd | nangate45 | 3 | 33.1 (mean) | 54% | 557 |
-| gcd | sky130hd | 1 | 31.2 | 60% | 450 |
-| aes | nangate45 | 3 | 300.1 (mean) | 66% | 925 |
-| ibex | nangate45 | 1 | 300.0 | 57% | 959 |
-| jpeg | nangate45 | 1 | 860.0 | 60% | 1,856 |
-| aes | sky130hd | 1 | 1,576.3 | 93% | 2,867 |
+| gcd | nangate45 | 3 | 32.6 (mean) | 55% | 557 |
+| gcd | sky130hd | 1 | 30.3 | 62% | 450 |
+| aes | nangate45 | 3 | 297.1 (mean) | 67% | 925 |
+| ibex | nangate45 | 1 | 285.7 | 60% | 959 |
+| jpeg | nangate45 | 1 | 820.7 | 62% | 1,856 |
+| aes | sky130hd | 1 | 1,571.9 | 93% | 2,867 |
 
-- Docker start-up and teardown add about 5–7 s per run on top of the step times. The runtime labels
+- Docker start-up, teardown and make overhead add about 7–10 s per run on top of the step times. The runtime labels
   use the step times, not the outer wall time.
-- Detailed routing dominates (54–93% of flow time). The same RTL (aes) costs **5.3×** more on
+- Detailed routing dominates (55–93% of flow time). The same RTL (aes) costs **5.3×** more on
   sky130hd than on nangate45, almost all in routing. So the platform is a first-order feature.
 - Peak memory stayed below 3 GB, so memory is not the binding constraint on this machine; time is.
+
+> **Correction (2026-11-24, during Phase 2):** the numbers above were first published with the
+> cts and finish stages over-counted. ORFS runs the logic-equivalence check (`4_rsz_lec`,
+> `6_final_lec`) *inside* the CTS and report steps and echoes its timing line into their logs, and
+> the parser added that line a second time. After the parser fix the pilot registry was re-parsed
+> from the original logs (`siliconai reparse`, logged in `data/pilot_phase1/corrections.jsonl`). Flow
+> times dropped by 0–5% (jpeg 860.0 → 820.7 s); route time and every conclusion are unchanged.
+> Details: ADR-015.
 
 **Run-to-run noise (3 repeats of an identical configuration)**
 
 | Design | Whole-flow CV (outer wall) | Per-stage wall-time CV (stages > 0.5 s) | Per-stage peak-memory CV |
 |---|---|---|---|
-| gcd nangate45 | 1.7% | 2.0–5.9% | 0.1–2.1% |
-| aes nangate45 | 0.7% | 0.7–4.7% | 0.1–3.0% |
+| gcd nangate45 | 1.7% | 2.1–5.9% | 0.1–2.1% |
+| aes nangate45 | 0.7% | 0.7–4.6% | 0.1–3.0% |
 
 Interpretation: on this machine, labels are reproducible to within a few percent, so a model
 cannot meaningfully claim per-stage errors below ~5% on short stages. Caveat: n = 3 repeats on

@@ -135,24 +135,39 @@ class Registry:
                     run.started_at.isoformat(),
                 ),
             )
-            c.executemany(
-                "INSERT INTO steps(run_id, step, stage, wall_s, cpu_user_s, cpu_sys_s, "
-                "peak_rss_mb, metrics_json, log_path) VALUES (?,?,?,?,?,?,?,?,?)",
-                [
-                    (
-                        s.run_id,
-                        s.step,
-                        s.stage,
-                        s.wall_s,
-                        s.cpu_user_s,
-                        s.cpu_sys_s,
-                        s.peak_rss_mb,
-                        json.dumps(s.metrics, sort_keys=True),
-                        s.log_path,
-                    )
-                    for s in steps
-                ],
-            )
+            self._insert_steps(c, steps)
+
+    def replace_steps(self, run_id: str, steps: Iterable[StepRecord]) -> None:
+        """Replace a recorded run's steps atomically (e.g. after a parser fix; see `reparse`)."""
+        steps = list(steps)
+        if any(s.run_id != run_id for s in steps):
+            raise ValueError(f"all steps must belong to {run_id}")
+        with self.transaction() as c:
+            if c.execute("SELECT 1 FROM runs WHERE run_id = ?", (run_id,)).fetchone() is None:
+                raise KeyError(run_id)
+            c.execute("DELETE FROM steps WHERE run_id = ?", (run_id,))
+            self._insert_steps(c, steps)
+
+    @staticmethod
+    def _insert_steps(c: sqlite3.Connection, steps: list[StepRecord]) -> None:
+        c.executemany(
+            "INSERT INTO steps(run_id, step, stage, wall_s, cpu_user_s, cpu_sys_s, "
+            "peak_rss_mb, metrics_json, log_path) VALUES (?,?,?,?,?,?,?,?,?)",
+            [
+                (
+                    s.run_id,
+                    s.step,
+                    s.stage,
+                    s.wall_s,
+                    s.cpu_user_s,
+                    s.cpu_sys_s,
+                    s.peak_rss_mb,
+                    json.dumps(s.metrics, sort_keys=True),
+                    s.log_path,
+                )
+                for s in steps
+            ],
+        )
 
     def delete_run(self, run_id: str) -> bool:
         """Remove a run and its steps (e.g. a label contaminated by CPU contention)."""

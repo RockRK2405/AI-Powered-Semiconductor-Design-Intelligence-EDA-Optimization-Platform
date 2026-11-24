@@ -43,3 +43,4 @@ Each item is specific and independently checkable. IDs are stable.
 - [ ] P2-14 Collect D1 v1: `sweeps/d1_core.yaml` (~157 runs, ~5 chunks), then `sweeps/d1_ext.yaml` if time permits.
 - [ ] P2-15 Freeze D1 v1 (`scripts/build_dataset.py`) and run E1–E4 (`scripts/run_experiments.py`); report the results, including negative ones.
 - [ ] P2-16 Generated designs on platforms other than nangate45 (needs per-platform PDN/SDC units).
+- [x] P2-17 Data-integrity fixes found in chunk c04 (ADR-015): nested LEC timing no longer double-counted; leftover `.tmp` logs handled; clean run directories before every run; `siliconai reparse`; build refuses runs whose step times exceed wall time. Registry and Phase 1 report corrected and logged.

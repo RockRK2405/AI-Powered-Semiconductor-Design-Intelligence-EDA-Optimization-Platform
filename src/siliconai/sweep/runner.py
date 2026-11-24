@@ -34,6 +34,9 @@ FINAL_STATUSES = frozenset({"success", "failed", "timeout"})
 ESTIMATE_FACTOR = 1.3
 ESTIMATE_OVERHEAD_S = 30.0
 PRUNED_SUBDIRS = ("results", "objects")
+# Everything ORFS writes for one variant. Cleared before a (re)run so make cannot reuse an
+# earlier attempt's results and stale logs cannot be mistaken for this run's steps.
+RUN_SUBDIRS = ("results", "objects", "logs", "reports")
 
 Executor = Callable[..., RunRecord]
 
@@ -81,8 +84,11 @@ def expected_duration(registry: Registry, run: PlannedRun, spec: SweepSpec) -> f
     return run.design.expected_s or float(spec.timeout_s)
 
 
-def prune_artifacts(work_dir: Path, platform: str, variant: str) -> int:
-    """Delete bulky per-run ORFS outputs (``results/``, ``objects/``); keep logs and reports.
+def prune_artifacts(
+    work_dir: Path, platform: str, variant: str, subdirs: tuple[str, ...] = PRUNED_SUBDIRS
+) -> int:
+    """Delete one variant's ORFS outputs under ``subdirs`` (default: the bulky ``results/`` and
+    ``objects/``; logs and reports are kept).
 
     Returns the number of directories removed. Paths are built from validated names and must
     resolve inside ``work_dir``.
@@ -91,7 +97,7 @@ def prune_artifacts(work_dir: Path, platform: str, variant: str) -> int:
         raise ValueError("invalid platform/variant")
     root = Path(work_dir).resolve()
     removed = 0
-    for sub in PRUNED_SUBDIRS:
+    for sub in subdirs:
         for path in (root / sub / platform).glob(f"*/{variant}"):
             resolved = path.resolve()
             if path.is_symlink() or not resolved.is_relative_to(root):
@@ -190,6 +196,8 @@ def run_sweep(
             report.stopped_reason = "docker daemon not reachable"
             break
         timeout = int(min(spec.timeout_s, remaining - ESTIMATE_OVERHEAD_S))
+        if prune_artifacts(work_dir, run.design.platform, run.run_id, RUN_SUBDIRS):
+            log.info("%s: cleared outputs of an earlier attempt", run.run_id)
         record = executor(
             registry,
             design_record(run.design),

@@ -145,6 +145,41 @@ def cmd_forget(settings: Settings, args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_reparse(settings: Settings, args: argparse.Namespace) -> int:
+    """Re-parse recorded runs' steps from their logs (after a parser fix) and log the change."""
+    import json
+    from datetime import UTC, datetime
+
+    from siliconai.eda.collect import reparse_run
+
+    entries, missing = [], []
+    with Registry(settings.db_path) as reg:
+        run_ids = args.run_id or [r["run_id"] for r in reg.runs()]
+        for run_id in run_ids:
+            try:
+                before, after = reparse_run(reg, run_id)
+            except FileNotFoundError:
+                missing.append(run_id)
+                continue
+            entries.append({"run_id": run_id, "step_wall_sum_before": before, "after": after})
+    changed = [
+        e for e in entries if abs((e["step_wall_sum_before"] or 0) - (e["after"] or 0)) > 1e-6
+    ]
+    record = {
+        "action": "reparse",
+        "reason": args.reason,
+        "at": datetime.now(UTC).isoformat(),
+        "reparsed": len(entries),
+        "missing_logs": missing,
+        "changed": changed,
+    }
+    args.log.parent.mkdir(parents=True, exist_ok=True)
+    with args.log.open("a") as fh:
+        fh.write(json.dumps(record, sort_keys=True) + "\n")
+    print(f"reparsed {len(entries)} runs ({len(changed)} changed); logs missing for {missing}")
+    return 1 if missing and args.strict else 0
+
+
 def cmd_runs(settings: Settings) -> int:
     with Registry(settings.db_path) as reg:
         print(f"{'run_id':40s} {'stage':10s} {'wall_s':>9s} {'cpu_s':>9s} {'peak_MB':>8s}")
@@ -188,6 +223,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     fgt.add_argument("run_id")
     fgt.add_argument("--reason", required=True)
     fgt.add_argument("--log", type=Path, required=True, help="JSONL log of removed runs")
+    rep = sub.add_parser("reparse", help="re-parse recorded runs' steps from their logs")
+    rep.add_argument("--run-id", action="append", help="default: every run")
+    rep.add_argument("--reason", required=True)
+    rep.add_argument("--log", type=Path, required=True, help="JSONL log of corrections")
+    rep.add_argument("--strict", action="store_true", help="fail if any run's logs are missing")
     imp = sub.add_parser("import", help="load registry JSONL (e.g. committed data)")
     imp.add_argument("--src", type=Path, required=True)
 
@@ -206,6 +246,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_export(settings, args)
     if args.command == "forget":
         return cmd_forget(settings, args)
+    if args.command == "reparse":
+        return cmd_reparse(settings, args)
     if args.command == "import":
         return cmd_import(settings, args)
     parser.error(f"unknown command {args.command}")

@@ -47,6 +47,23 @@ def _cfg_value(v: object) -> float:
         return float("nan")
 
 
+# A run's steps execute inside its container, so their wall times cannot add up to more than the
+# container's wall time. Tolerance covers rounding in ORFS's timing lines (ADR-015).
+STEP_SUM_TOLERANCE = (1.01, 1.0)  # (factor, seconds)
+
+
+def check_step_times(runs: list[dict], steps_by_run: dict[str, list[dict]]) -> None:
+    """Refuse runs whose step times exceed their measured wall time (stale or double-counted)."""
+    factor, slack = STEP_SUM_TOLERANCE
+    bad = []
+    for run in runs:
+        total = sum(s["wall_s"] or 0.0 for s in steps_by_run.get(run["run_id"], []))
+        if run["wall_s"] is not None and total > run["wall_s"] * factor + slack:
+            bad.append(f"{run['run_id']} (steps {total:.0f} s > wall {run['wall_s']:.0f} s)")
+    if bad:
+        raise ValueError("inconsistent step times, refusing to build: " + ", ".join(bad))
+
+
 def build_table(
     registry: Registry,
     *,
@@ -74,6 +91,7 @@ def build_table(
     steps_by_run: dict[str, list[dict]] = defaultdict(list)
     for s in registry.all_steps():
         steps_by_run[s["run_id"]].append(dict(s))
+    check_step_times(runs, steps_by_run)
 
     rows = []
     for run in runs:

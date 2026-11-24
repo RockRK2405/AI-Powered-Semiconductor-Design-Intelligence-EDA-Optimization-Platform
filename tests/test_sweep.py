@@ -339,3 +339,75 @@ def test_per_design_default_repeats_override():
     runs = plan(spec, {})
     assert sum(1 for r in runs if not r.overrides) == 3
     assert sum(1 for r in runs if r.overrides) == 1
+
+
+def test_sweep_clears_earlier_attempt_outputs_before_running(tmp_path):
+    # Regression: a re-run must not let ORFS make reuse an earlier attempt's results, nor
+    # pick up that attempt's logs as its own steps.
+    clock = FakeClock()
+    spec = make_spec(
+        designs=[{"config": "./designs/nangate45/gcd/config.mk", "group": "gcd", "n_configs": 1}],
+        default_repeats=1,
+    )
+    run_id = plan(spec, {})[0].run_id
+    for sub in ("results", "objects", "logs", "reports"):
+        d = tmp_path / sub / "nangate45" / "gcd" / run_id
+        d.mkdir(parents=True)
+        (d / "stale").write_text("x")
+    other = tmp_path / "logs" / "nangate45" / "gcd" / "other_run"
+    other.mkdir(parents=True)
+    seen = []
+    inner = fake_executor(clock, {"gcd_nangate45": 10.0})
+
+    def ex(*a, **kw):
+        seen.extend(p for p in tmp_path.rglob("stale"))
+        return inner(*a, **kw)
+
+    with Registry(tmp_path / "r.sqlite") as reg:
+        run_sweep(
+            spec,
+            reg,
+            work_dir=tmp_path,
+            image="img",
+            budget_s=1000,
+            config_reader=CONFIGS.__getitem__,
+            executor=ex,
+            clock=clock,
+            health_check=lambda: True,
+            prune=False,
+        )
+    assert len(inner.calls) == 1
+    assert seen == []
+    assert other.exists()
+
+
+def test_execute_and_record_keeps_run_when_step_records_are_rejected(tmp_path, monkeypatch):
+    from siliconai.eda import collect
+    from siliconai.eda.runner import ToolResult
+
+    monkeypatch.setattr(
+        collect,
+        "run_orfs",
+        lambda job, **kw: ToolResult(("docker",), 124, 1800.0, True, tmp_path / "c.log"),
+    )
+
+    def reject(run_id, log_dir):
+        raise ValueError("bad step name")
+
+    monkeypatch.setattr(collect, "steps_from_log_dir", reject)
+    monkeypatch.setattr(collect, "image_digest", lambda image: "img@sha256:x")
+    design = collect.orfs_design_record("./designs/nangate45/gcd/config.mk")
+    with Registry(tmp_path / "r.sqlite") as reg:
+        run = collect.execute_and_record(
+            reg,
+            design,
+            "./designs/nangate45/gcd/config.mk",
+            {},
+            work_dir=tmp_path,
+            image="img",
+            timeout_s=1800,
+            skip_existing=False,
+        )
+        assert run.status == "timeout"
+        assert [r["status"] for r in reg.runs()] == ["timeout"]
+        assert reg.all_steps() == []
