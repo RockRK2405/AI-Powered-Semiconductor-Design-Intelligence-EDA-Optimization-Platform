@@ -1,0 +1,122 @@
+# Experiment protocols E1–E4 (pre-registered)
+
+**Written 2026-11-24, before dataset D1 v1 exists and before any model is trained** (TODO P2-04).
+Any change after the first E1 run is listed in the change log at the bottom with a reason. This
+document fixes primary endpoints, splits, baselines and success criteria in advance, so the
+results cannot be tuned to look good.
+
+Hypotheses are defined in [`research/04_novelty_analysis.md`](../research/04_novelty_analysis.md).
+
+## 0. Dataset D1 v1 — inclusion rules
+
+| Rule | Why |
+|---|---|
+| One ORFS image digest (`openroad/orfs@sha256:620c13d9…`) | Tool version is a confounder (ADR-010) |
+| One host fingerprint (CPU model, 4 logical CPUs) | Runtime is machine-specific |
+| `concurrency = 1` | Contention distorts runtime labels (Phase 1 pilot) |
+| Regression targets: runs with `status = success` only | A failed run has no downstream stages |
+| `aborted` runs excluded everywhere | Caused by our infrastructure, not the design |
+| `failed` / `timeout` runs kept for outcome-risk work (Phase 7) and the log corpus (H5) | |
+
+Before E1 runs, the dataset is **frozen**: the Parquet file is content-hashed, and every experiment
+record stores that hash. Adding runs creates D1 v2; results are never silently mixed.
+
+## 1. Targets, horizons and leakage
+
+- **Stages** *s* ∈ {synth, floorplan, place, cts, route, finish}.
+- **Targets** per stage: `ln(wall_s)` and `ln(peak_rss_mb)`; also total flow `ln(Σ wall_s)`.
+  Wall time is the sum over the stage's ORFS steps; peak memory is the max (ADR-011).
+- **Horizon** *h*: the last stage whose outputs are visible. A model at horizon *h* predicts only
+  stages after *h*.
+  - `h0` (pre-run): platform, flow-config knobs, design origin. No design-size information (RTL
+    features arrive in Phase 4). This is deliberately weak and serves as a floor.
+  - `h_synth`: + all synthesis METRICS2.1 values and synthesis wall/memory. **Primary horizon**:
+    after cheap synthesis, predict the expensive physical-design cost.
+  - `h_floorplan`, `h_place`, `h_cts`, `h_route`: each adds that stage's metrics and measurements.
+- **Leakage rules (enforced by tests):** a feature is tagged with the stage that produces it,
+  and a model at horizon *h* may only use features tagged ≤ *h*. Run ids, timestamps,
+  `repeat_index`, `exit_code` and `status` are never features.
+
+## 2. Splits
+
+- **Primary: leave-one-group-out (LOGO)** over `design_group`. The same RTL on any platform, and
+  every member of a generated family, share one group. So the test design's RTL lineage is never
+  seen in training.
+- **Contrast (E3 only):** random 5-fold over rows. This leaks design identity and is expected to
+  look optimistic.
+- Repeated runs of the same config always stay in the same group, so repeats can't leak.
+
+## 3. Models
+
+- **Baselines**
+  - **B0:** the training median of the target, per platform.
+  - **B1:** log-linear `ln(y) ~ a + b·ln(synth cell count) + platform` (from `h_synth` onward).
+- **Candidates:** Ridge (standardized features), RandomForest, and scikit-learn
+  HistGradientBoosting (GBM).
+  - Hyperparameters come from a small fixed grid.
+  - They are selected by inner LOGO on the training groups only.
+- Seeds are fixed and recorded. Each run writes `experiments/<id>.json` with the params, dataset
+  hash, git SHA, seed and metrics (ADR-006).
+
+## 4. E1 — H1: learned models vs baselines on unseen designs
+
+- **Primary endpoints (fixed now):** MAE of `ln(wall)` at horizon `h_synth` for (a) **route** and
+  (b) **total-flow** wall time, under LOGO.
+- **Secondary endpoints:** the same for every other stage and for peak memory; MdAPE on the original
+  scale; R²; underestimation rate (prediction below actual by more than 20%).
+- **Uncertainty:** a paired, group-level bootstrap (resample design groups; 2,000 replicates) of
+  ΔMAE = MAE(best candidate) − MAE(best baseline).
+- **H1 is supported** only if the 95% CI of ΔMAE lies entirely below 0 for **both** primary
+  endpoints. Otherwise H1 is reported as not supported.
+- **Noise floor:** Phase 1 measured per-stage CV ≤ 6%, which is about 0.06 on the ln scale. An MAE well
+  below 0.06 would be implausible and triggers a leakage audit before it is reported.
+
+## 5. E2 — H2: does each observed stage help downstream predictions?
+
+- For each target stage, report MAE and the 90% interval width (from E3's best method) at every
+  admissible horizon, under LOGO.
+- **H2 is supported** if, for route and finish targets, MAE at `h_place` is lower than at
+  `h_synth`, with a group-bootstrap 95% CI of the difference below 0.
+
+## 6. E3 — H3: conformal coverage on unseen designs
+
+- **Nominal coverage:** 90%, on the ln scale, for the primary endpoints (route and total, at
+  `h_synth`).
+- **Methods**
+  - **(i) Naive split-conformal:** the calibration set is a random 25% of the training rows.
+  - **(ii) Group-aware conformal:** calibration residuals come from out-of-group predictions,
+    using inner LOGO on the training groups (CV+ style).
+  - **(iii) CQR:** GBM quantile regression at 5% and 95%, conformalized as in (ii).
+  - **(iv) Mondrian by platform:** method (ii) applied per platform.
+- **Report:** empirical coverage (group-bootstrap CI) and mean width, under random splits and under LOGO.
+- **H3 is supported** if (i) reaches ≥ 88% coverage under random splits but stays below 85% under LOGO,
+  **and** some method among (ii)–(iv) reaches ≥ 88% under LOGO. Both directions are reported
+  whatever happens.
+
+## 7. E4 — H4: abstention on out-of-distribution inputs
+
+- **OOD score:** mean distance to the 5 nearest training rows in the standardized feature space
+  of the `h_synth` model, computed on training groups only.
+- **Large error:** |ln(pred/actual)| > ln 1.5 (off by more than 50%).
+- **Comparison:** the large-error rate at 80% and 90% coverage when abstaining on the highest OOD
+  scores, versus random abstention (mean of 1,000 random draws) and versus abstaining on the widest
+  conformal intervals.
+- **H4 is supported** if OOD abstention gives a lower large-error rate than random abstention at
+  both coverages, with a group-bootstrap CI that excludes 0.
+
+## 8. Threats to validity, acknowledged up front
+
+- **One machine type** (a shared cloud VM, 4 vCPU). Absolute runtimes don't transfer to other
+  machines; relative conclusions may.
+- **Few design groups** (about 15–20): CIs will be wide. A null result can mean too little data
+  rather than no effect.
+- **Generated designs are synthetic RTL.** They are tagged, and results are also reported for ORFS
+  designs only.
+- **Light interactive work** (editing, unit tests) shared the VM during collection. Phase 1 noise
+  measurements cover this regime, but it is uncontrolled.
+
+## Change log
+
+| Date | Change | Reason |
+|---|---|---|
+| 2026-11-24 | Initial version | — |
