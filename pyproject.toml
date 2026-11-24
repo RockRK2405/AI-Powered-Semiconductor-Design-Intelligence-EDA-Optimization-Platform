@@ -20,6 +20,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.5"]
+dashboard = ["streamlit>=1.40"]
 
 [project.scripts]
 siliconai = "siliconai.cli:main"

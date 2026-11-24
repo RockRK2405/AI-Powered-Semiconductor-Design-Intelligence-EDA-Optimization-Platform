@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from siliconai.runtime_intelligence.experiments import (
     ood_scores_logo,
@@ -92,3 +93,17 @@ def test_e4_ood_scores_and_selection():
     _, oof = run_e1(df, grids=FAST)
     res = run_e4(df, oof)
     assert "coverage_0.8" in res["targets"]["y__route__ln_wall"]
+
+
+def test_predict_unseen_never_trains_on_the_runs_group():
+    from siliconai.runtime_intelligence.predict import predict_unseen
+
+    df = table()
+    res = predict_unseen(
+        df, "g3_0", "y__route__ln_wall", params={"max_iter": 30, "min_samples_leaf": 3}
+    )
+    assert res["held_out_group"] == "g3" and res["train_groups"] == 6
+    assert 0 < res["lo"] <= res["point"] <= res["hi"]
+    assert res["actual"] > 0 and isinstance(res["covered"], bool)
+    with pytest.raises(ValueError):
+        predict_unseen(df, "nope", "y__route__ln_wall")
