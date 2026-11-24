@@ -24,6 +24,7 @@
 {"design_group":"gen_addtree","design_id":"sai_addtree_i8_w8_nangate45","license":"MIT","name":"sai_addtree_i8_w8","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen addtree {\"inputs\": 8, \"width\": 8}"}
 {"design_group":"gen_alu","design_id":"sai_alu_w32_nangate45","license":"MIT","name":"sai_alu_w32","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen alu {\"width\": 32}"}
 {"design_group":"gen_alu","design_id":"sai_alu_w64_nangate45","license":"MIT","name":"sai_alu_w64","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen alu {\"width\": 64}"}
+{"design_group":"gen_alu","design_id":"sai_alu_w8_nangate45","license":"MIT","name":"sai_alu_w8","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen alu {\"width\": 8}"}
 {"design_group":"gen_crc","design_id":"sai_crc_w32_nangate45","license":"MIT","name":"sai_crc_w32","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen crc {\"width\": 32}"}
 {"design_group":"gen_crc","design_id":"sai_crc_w64_nangate45","license":"MIT","name":"sai_crc_w64","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen crc {\"width\": 64}"}
 {"design_group":"gen_crc","design_id":"sai_crc_w8_nangate45","license":"MIT","name":"sai_crc_w8","origin":"generated","platform":"nangate45","source":"siliconai.rtlgen crc {\"width\": 8}"}
