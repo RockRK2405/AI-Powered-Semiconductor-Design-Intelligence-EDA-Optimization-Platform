@@ -5,12 +5,17 @@ Reports, from recorded data only:
   2. run-to-run noise: coefficient of variation (CV = std/mean) of wall time and peak
      memory per stage, across repeats of an identical configuration.
 
-Usage: SILICONAI_HOME=workspace/phase1 python scripts/pilot_report.py [--markdown out.md]
+Usage: SILICONAI_HOME=workspace/phase1 python scripts/pilot_report.py \
+           [--markdown out.md] [--export-dir data/pilot_phase1]
+
+--export-dir writes runs.csv and stage_summary.csv so that the numbers quoted in PROGRESS.md
+can be regenerated from committed data (the run workspace itself is not committed).
 """
 
 from __future__ import annotations
 
 import argparse
+import csv
 import statistics
 from collections import defaultdict
 from pathlib import Path
@@ -71,12 +76,48 @@ def build_report(reg: Registry) -> str:
     return "\n".join(lines) + "\n"
 
 
+RUN_COLUMNS = (
+    "run_id",
+    "design_id",
+    "config_hash",
+    "config_json",
+    "tool_image",
+    "host_json",
+    "concurrency",
+    "repeat_index",
+    "injected_fault",
+    "status",
+    "exit_code",
+    "wall_s",
+    "started_at",
+)
+
+
+def export_csv(reg: Registry, out_dir: Path) -> None:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    with (out_dir / "runs.csv").open("w", newline="") as fh:
+        writer = csv.writer(fh)
+        writer.writerow(RUN_COLUMNS)
+        for run in sorted(reg.runs(), key=lambda r: r["run_id"]):
+            writer.writerow([run[c] for c in RUN_COLUMNS])
+    rows = sorted(reg.stage_summary(), key=lambda r: (r["run_id"], r["stage"]))
+    with (out_dir / "stage_summary.csv").open("w", newline="") as fh:
+        writer = csv.writer(fh)
+        cols = list(rows[0].keys()) if rows else []
+        writer.writerow(cols)
+        for row in rows:
+            writer.writerow([row[c] for c in cols])
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--markdown", type=Path, default=None)
+    parser.add_argument("--export-dir", type=Path, default=None)
     args = parser.parse_args()
     with Registry(Settings.from_env().db_path) as reg:
         report = build_report(reg)
+        if args.export_dir:
+            export_csv(reg, args.export_dir)
     print(report)
     if args.markdown:
         args.markdown.write_text(report)

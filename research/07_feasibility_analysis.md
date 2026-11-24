@@ -1,7 +1,7 @@
 # 07 — Feasibility Analysis
 
-Machine assumption: 4 vCPU / 15 GB RAM / no GPU (this container). Runtime estimates for
-EDA runs are **unmeasured guesses**, to be replaced with measurements in Phase 1.
+Machine assumption: 4 vCPU / 15 GB RAM / no GPU (this container). The compute budget below was
+**measured in the Phase 1 pilot** (2026-11-24); the original guesses are kept for comparison.
 
 | Module | Local (pure Python) | Needs open-source EDA | Significant compute | Needs proprietary | Data realistically obtainable | Quantitatively evaluable | Known limitations | Verdict |
 |---|---|---|---|---|---|---|---|---|
@@ -14,21 +14,37 @@ EDA runs are **unmeasured guesses**, to be replaced with measurements in Phase 1
 | **7. Decision engine** | Yes | — | Low | No | Derived | Partly (rule tests; offline "regret" on held-out runs) | Recommendations are heuristics on top of models | **Go** |
 | **8. Copilot** | Retrieval, tool-calls | — | Low | LLM API (paid) or local model | Our DB | Partly (citation precision on a gold set) | Needs a key; risk of hallucination, mitigated by structure | **Go (last)** |
 
-## Compute budget sketch (to be measured)
+## Compute budget (measured in the Phase 1 pilot)
 
-| Design class | Example | Guess per full ORFS run on Nangate45 |
-|---|---|---|
-| Tiny | gcd | ~1–3 min |
-| Small | aes, uart-class, generated blocks | ~5–15 min |
-| Medium | ibex, jpeg | ~15–60 min |
+Source: `data/pilot_phase1/`, 16 runs, concurrency 1, this container.
 
-At an average of 10 min/run with 2 parallel runs (to keep peak memory and runtime contention
-measurable), 800 runs ≈ 67 hours of wall time. That is **feasible but must be planned**:
-staged sweeps, a resumable runner, and an early pilot (~50 runs) to measure the real cost.
+| Design class | Example (platform) | Phase 0 guess | **Measured flow wall time** | Peak memory |
+|---|---|---|---|---|
+| Tiny | gcd (nangate45 / sky130hd) | 1–3 min | **~33 s / 31 s** | 0.45–0.56 GB |
+| Small | aes (nangate45) | 5–15 min | **~5.0 min** | 0.9 GB |
+| Medium | ibex (nangate45) | 15–60 min | **~5.0 min** | 1.0 GB |
+| Medium | jpeg (nangate45) | 15–60 min | **~14.3 min** | 1.9 GB |
+| Small RTL, slower PDK | aes (sky130hd) | — | **~26.3 min** (93% routing) | 2.9 GB |
 
-**Important methodological constraint:** parallel runs contend for CPU and memory, which
-distorts runtime labels. The runner must record concurrency, and the main dataset should
-use a **fixed** concurrency level.
+Run-to-run noise: whole-flow CV 0.7–1.7%; per-stage wall-time CV ≤ 6% (stages > 0.5 s).
+
+**What this implies for Phase 2 (D1 v1)**
+
+- Running sequentially (the noise-safe choice), one day holds about 280 aes/ibex-class runs or
+  about 2,000 gcd-class runs. A first D1 of roughly 150–250 runs (ORFS designs plus small generated
+  designs, about 10–15 configurations each) costs about **10–20 h** of wall time. That is feasible, but
+  only as a staged, resumable sweep.
+- Parallel runs are rejected for the main dataset: they would distort the labels by more than the
+  measured noise floor. 2 GB peak memory would allow 2–3 parallel runs, but not cleanly.
+- sky130hd routing is 5× slower than nangate45 for the same RTL. Big sky130hd designs should be
+  sampled sparingly.
+- Disk: ≈ 175 MB of artifacts per run, so pruning after parsing is mandatory (P2-11).
+- This cloud container: ≤ 2 h per background command and an ephemeral disk, so sweeps run in
+  chunks and the registry is committed after each chunk. A persistent Linux/WSL machine removes
+  both limits; mixing machines within one dataset is not allowed.
+
+**Methodological constraint (unchanged):** contention distorts runtime labels. The runner records
+concurrency, and the main dataset uses a fixed concurrency of 1.
 
 ## What cannot be achieved, and will not be claimed
 

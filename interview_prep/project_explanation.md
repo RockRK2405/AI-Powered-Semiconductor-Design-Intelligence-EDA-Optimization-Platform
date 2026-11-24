@@ -1,6 +1,6 @@
 # Project Explanation (living document; only describes what actually exists)
 
-## 30-second version (as of Phase 1)
+## 30-second version (as of Phase 1, complete)
 
 > SiliconAI is an ML layer on top of the open-source OpenROAD chip-design flow. Its goal is to
 > predict how long each stage of a chip-implementation run will take and how much memory
@@ -32,9 +32,15 @@
 
 ## Numbers I can quote (from my own runs; see PROGRESS.md)
 
-- gcd on Nangate45, full RTL→GDS in the ORFS container: ~40 s wall on a 4-vCPU cloud VM.
-- Pilot results (per-design cost, run-to-run noise): see `PROGRESS.md` → Phase 1. **Quote only
-  numbers from that table.**
+All from the 16-run pilot on a 4-vCPU cloud VM (`data/pilot_phase1/`). **Quote only these.**
+- Full RTL→GDS flow time: gcd ~33 s, aes ~5 min, ibex ~5 min, jpeg ~14 min (Nangate45).
+- Same aes RTL on sky130hd: ~26 min, **5.3×** Nangate45, and 93% of it is routing. Platform is a
+  first-order feature.
+- Routing is 54–93% of flow time; peak memory stays below 3 GB, so time, not memory, is the budget.
+- Noise floor over 3 identical repeats: whole-flow CV 0.7–1.7%, per stage ≤ 6%. So I don't
+  claim per-stage errors below ~5%.
+- 6 of 16 pilot runs failed: utilization overrides conflict with designs that fix their floorplan
+  (`FLOORPLAN_DEF`). That became a preflight check for Phase 2, and a source of real failure logs.
 
 ## Likely questions
 

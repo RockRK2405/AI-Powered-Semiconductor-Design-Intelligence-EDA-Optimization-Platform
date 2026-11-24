@@ -13,17 +13,17 @@ Each item is specific and independently checkable. IDs are stable.
 
 ## Phase 1 — Foundation & toolchain (after approval)
 
-- [ ] **P1-01** `pyproject.toml` (Python ≥3.11), `src/siliconai/` package, ruff + pytest config, `.gitignore`, `.env.example`.
-- [ ] **P1-02** GitHub Actions: lint + unit tests on push.
-- [ ] **P1-03** OpenROAD route trial (ADR-010): (a) prebuilt binaries, (b) ORFS source build with a 2 h cap, (c) Docker if a daemon is available, (d) fallback to your machine. Record the outcome in DECISIONS.
-- [ ] **P1-04** Install yosys/iverilog/verilator via apt; record versions.
-- [ ] **P1-05** `eda/runner.py`: safe subprocess wrapper (no shell, timeout, prlimit, `/usr/bin/time -v` parsing for peak RSS, log capture). Unit tests with a fake tool.
-- [ ] **P1-06** `data/registry.py`: SQLite schema from ARCHITECTURE §4, plus pydantic models. Tests.
-- [ ] **P1-07** METRICS2.1 JSON parser. Tests against a real ORFS metrics file.
-- [ ] **P1-08** Run ORFS `gcd` on Nangate45 end to end through the runner; store all stages in the registry.
-- [ ] **P1-09** Pilot: ~20 runs (gcd, aes, one medium design × few configs), including 3 repeats each of 3 configs. Measure cost per run and the noise floor. Update the `research/07` budget with real numbers.
-- [ ] **P1-10** `config.py` + structured logging.
-- [ ] **P1-11** Start `interview_prep/project_explanation.md` from the real Phase 1 work.
+- [x] **P1-01** `pyproject.toml` (Python ≥3.11), `src/siliconai/` package, ruff + pytest config, `.gitignore`, `.env.example`.
+- [x] **P1-02** GitHub Actions: lint + unit tests on push.
+- [x] **P1-03** OpenROAD route trial (ADR-010): (a) prebuilt binaries, (b) ORFS source build with a 2 h cap, (c) Docker if a daemon is available, (d) fallback to your machine. Record the outcome in DECISIONS.
+- [x] **P1-04** Install yosys/iverilog/verilator via apt; record versions.
+- [x] **P1-05** `eda/runner.py`: safe subprocess wrapper (no shell, timeout, prlimit, `/usr/bin/time -v` parsing for peak RSS, log capture). Unit tests with a fake tool.
+- [x] **P1-06** `data/registry.py`: SQLite schema from ARCHITECTURE §4, plus pydantic models. Tests.
+- [x] **P1-07** METRICS2.1 JSON parser. Tests against a real ORFS metrics file.
+- [x] **P1-08** Run ORFS `gcd` on Nangate45 end to end through the runner; store all stages in the registry.
+- [x] **P1-09** Pilot: ~20 runs (gcd, aes, one medium design × few configs), including 3 repeats each of 3 configs. Measure cost per run and the noise floor. Update the `research/07` budget with real numbers. *(Done: 16 runs. Only 2 of the 3 repeated configs succeeded; see PROGRESS → Phase 1.)*
+- [x] **P1-10** `config.py` + structured logging.
+- [x] **P1-11** Start `interview_prep/project_explanation.md` from the real Phase 1 work.
 
 ## Phase 2 — Data engine + Runtime intelligence (preview)
 
@@ -36,3 +36,7 @@ Each item is specific and independently checkable. IDs are stable.
 - [ ] P2-07 Progressive (per-horizon) models; error and width vs. horizon.
 - [ ] P2-08 OOD score + abstention; risk–coverage curves.
 - [ ] P2-09 Minimal Streamlit page: run browser + prediction with interval.
+- [ ] P2-10 Sweep preflight: reject floorplan overrides (CORE_UTILIZATION, CORE_ASPECT_RATIO) on designs whose config fixes the floorplan (`FLOORPLAN_DEF`/`DIE_AREA`/`CORE_AREA`); found in the pilot.
+- [ ] P2-11 Prune large ORFS artifacts (`objects/`, `results/`) after metrics are parsed; keep logs, reports, JSON (≈175 MB/run otherwise).
+- [ ] P2-12 Chunked sweep execution (≤ 2 h per chunk) with a registry export after each chunk, so that an ephemeral container loses nothing.
+- [ ] P2-13 Dataset build excludes `failed` config-error runs from runtime training sets and tags them for the log corpus.

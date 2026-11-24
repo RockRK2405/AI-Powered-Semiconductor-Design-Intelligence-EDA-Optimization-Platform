@@ -2,10 +2,11 @@
 
 **AI-Powered Semiconductor Design Intelligence & EDA Optimization Platform**
 
-> **Project status: Phase 1 — foundation & toolchain.** Implemented so far: a hardened
+> **Project status: Phase 1 complete (foundation, toolchain, pilot).** Implemented: a hardened
 > runner for EDA tools, an OpenROAD-flow-scripts (ORFS) wrapper running in a pinned Docker
-> image, parsers for ORFS per-step timing/memory and METRICS2.1 metrics, and a SQLite run
-> registry. **No ML models exist yet.** Everything else below is planned work.
+> image, parsers for ORFS per-step timing/memory and METRICS2.1 metrics, a SQLite run registry,
+> and a 16-run measured pilot ([`data/pilot_phase1/`](data/pilot_phase1/)). **No ML models exist
+> yet.** Everything else below is planned work.
 
 ## What this project is
 
@@ -58,6 +59,7 @@ Set `SILICONAI_ORFS_IMAGE` to the digest above to reproduce our tool versions ex
 | [`src/siliconai/`](src/siliconai/) | Package: `eda/` (runner, ORFS wrapper, parsers), `data/` (schemas, registry), `cli.py` |
 | [`tests/`](tests/) | Unit tests + EDA integration tests (marker `eda`) |
 | [`scripts/`](scripts/) | Pilot run script and report |
+| [`data/pilot_phase1/`](data/pilot_phase1/) | Measured pilot results (CSV + report), regenerable with `scripts/pilot_report.py` |
 | [`interview_prep/`](interview_prep/) | Explanations grounded in what is actually built |
 
 ## Principles
