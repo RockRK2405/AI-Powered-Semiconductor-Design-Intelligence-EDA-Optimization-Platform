@@ -1,0 +1,16 @@
+# D1 v2 step 1: check that generated designs go through the full ORFS flow on the four
+# platforms added for D1 v2 (asap7, gf180, ihp-sg13g2, sky130hd), one small and one ~1.4k-cell
+# design each, default flow config. These runs are D1 v2 rows (docs/experiments.md §10).
+name: gen_validate_v2
+target: finish
+timeout_s: 1200
+seed: 2
+designs:
+  - {generate: {family: alu, params: {width: 8}, platform: asap7}, expected_s: 90}
+  - {generate: {family: mac, params: {lanes: 4, width: 8}, platform: asap7}, expected_s: 150}
+  - {generate: {family: alu, params: {width: 8}, platform: gf180}, expected_s: 90}
+  - {generate: {family: mac, params: {lanes: 4, width: 8}, platform: gf180}, expected_s: 150}
+  - {generate: {family: alu, params: {width: 8}, platform: ihp-sg13g2}, expected_s: 120}
+  - {generate: {family: mac, params: {lanes: 4, width: 8}, platform: ihp-sg13g2}, expected_s: 200}
+  - {generate: {family: alu, params: {width: 8}, platform: sky130hd}, expected_s: 120}
+  - {generate: {family: mac, params: {lanes: 4, width: 8}, platform: sky130hd}, expected_s: 200}
