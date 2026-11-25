@@ -2,13 +2,17 @@
 
 **AI-Powered Semiconductor Design Intelligence & EDA Optimization Platform**
 
-> **Project status: Phase 2 complete, awaiting review.**
+> **Project status: Phase 2 complete, including the D1 v2 follow-up round; awaiting review before Phase 3.**
 > - Phase 1 delivered a hardened EDA runner, a digest-pinned ORFS Docker wrapper, parsers, a SQLite run registry and a measured pilot ([`data/pilot_phase1/`](data/pilot_phase1/)).
 > - Phase 2 collected dataset D1 v1: 175 successful real ORFS runs, 16 design groups, 5 platforms.
 > - Phase 2 then ran the pre-registered experiments E1–E4 ([`docs/experiments.md`](docs/experiments.md)). **Results ([`docs/results_d1_v1.md`](docs/results_d1_v1.md)):**
 >   - On unseen designs a log-linear baseline beats gradient boosting for route and total runtime (H1 not supported).
 >   - For a 90% target, group-aware conformal intervals reach 92–94% coverage on unseen designs, where naive conformal drops to 53–57% (H3 supported).
 >   - H2 and H4 are not supported on this data.
+> - A pre-registered follow-up (E1b) collected D1 v2, which adds 179 new runs and fills the platform × size gap. **Results ([`docs/results_d1_v2.md`](docs/results_d1_v2.md)):**
+>   - On the new rows, a residual hybrid (B1 + gradient boosting on its residuals) has the lowest error. Against B1, ΔMAE is −0.135 on both endpoints, but the CIs include 0, so H1b is not supported.
+>   - The D1 v1 ordering "B1 beats HGB" did not repeat either.
+>   - So far no runtime model has been shown to beat the log-linear baseline on unseen design groups. The limiting factor is the number of design groups.
 
 ## What this project is
 

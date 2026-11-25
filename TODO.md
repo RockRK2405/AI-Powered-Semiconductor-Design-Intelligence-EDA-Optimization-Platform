@@ -25,7 +25,7 @@ Each item is specific and independently checkable. IDs are stable.
 - [x] **P1-10** `config.py` + structured logging.
 - [x] **P1-11** Start `interview_prep/project_explanation.md` from the real Phase 1 work.
 
-## Phase 2 — Data engine + Runtime intelligence (complete; follow-ups P2-16, P2-18…21 open)
+## Phase 2 — Data engine + Runtime intelligence (complete, including the D1 v2 round; follow-ups P2-20…23 open)
 
 - [x] P2-01 Sweep spec (YAML) + resumable sweep runner with fixed concurrency.
 - [x] P2-02 Parameterized RTL generators (adder, multiplier, FIFO, FSM, MAC array), tagged `generated`.
@@ -44,7 +44,9 @@ Each item is specific and independently checkable. IDs are stable.
 - [x] P2-15 Freeze D1 v1 (hash `ee0aebdd56278380`) and run E1–E4; results, including negative ones, in `docs/results_d1_v1.md`.
 - [x] P2-16 Generated designs on asap7, gf180, ihp-sg13g2 and sky130hd: platform default PDN, clock period scaled by each platform's gcd period (asap7 in ps); 8/8 validation runs succeeded (v2c00).
 - [x] P2-17 Data-integrity fixes found in chunk c04 (ADR-015): nested LEC timing no longer double-counted; leftover `.tmp` logs handled; clean run directories before every run; `siliconai reparse`; build refuses runs whose step times exceed wall time. Registry and Phase 1 report corrected and logged.
-- [ ] P2-18 *(in progress: `sweeps/d1_v2.yaml`, 186 runs, chunks v2c00…)* D1 v2 sweep: mid-size (1k–5k cells) and large designs on asap7, gf180, ihp-sg13g2 and sky130hd; fewer gcd configs; more design groups. Depends on P2-16.
-- [ ] P2-19 *(pre-registered as E1b, `docs/experiments.md` §10; code ready; runs after the D1 v2 freeze)* Pre-register and run, on D1 v2: residual hybrid (B1 + HGB on residuals) vs B1 vs HGB; interval width vs. horizon; E2 repeated with the better model.
+- [x] P2-18 *(done: `sweeps/d1_v2.yaml` complete in chunks v2c00–v2c05; D1 v2 frozen, hash `3f601a94fdbaf60d`)* D1 v2 sweep: mid-size (1k–5k cells) and large designs on asap7, gf180, ihp-sg13g2 and sky130hd; fewer gcd configs; more design groups. Depends on P2-16.
+- [x] P2-19 E1b run on D1 v2 ([`docs/results_d1_v2.md`](docs/results_d1_v2.md)): H1b not supported (hybrid − B1 = −0.135 on both endpoints, CIs include 0); E2 repeated with the hybrid. *(Interval width vs. horizon still not reported: P2-22.)*
 - [ ] P2-20 E4 follow-ups: an OOD score based on platform × size support; risk–coverage curves; comparison with abstaining on the widest CQR/Mondrian intervals.
-- [ ] P2-21 Dashboard: show the B1 prediction next to HGB, since B1 is the better point model on D1 v1.
+- [ ] P2-21 Dashboard: show B1 as the reference prediction with group-OOF intervals, and the hybrid next to it labelled experimental (results_d1_v2.md §4).
+- [ ] P2-22 Conformal interval width vs. horizon (left over from P2-07/P2-19).
+- [ ] P2-23 More *design groups*, not more runs: real ORFS designs on several platforms (E1b's CIs are limited by 9 scored groups). Candidates must pass a one-run probe on each platform first; tage_update/asap7 needs `LEC_CHECK=0`, as ORFS already sets for cva6.

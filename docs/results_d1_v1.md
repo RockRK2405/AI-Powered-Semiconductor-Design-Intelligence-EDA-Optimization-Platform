@@ -170,7 +170,7 @@ not a result.
    of 175 rows).
 3. **Conformal calibration must be group-aware.** Naive split conformal silently drops to about 55% coverage
    on unseen designs. This is the most transferable result here.
-4. **Next experiment (D1 v2, to be pre-registered before collection):** hybrid vs B1 vs HGB, on
+4. **Next experiment (D1 v2, pre-registered as E1b; result: H1b not supported, see [`results_d1_v2.md`](results_d1_v2.md)):** hybrid vs B1 vs HGB, on
    a dataset with platform × size coverage. Plus E4 with an OOD score that looks at platform × size
    support rather than raw feature distance.
 

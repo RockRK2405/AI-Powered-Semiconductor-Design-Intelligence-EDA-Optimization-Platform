@@ -125,7 +125,7 @@ Results on D1 v1: [`results_d1_v1.md`](results_d1_v1.md).
 
 ## 10. E1b — H1b: does the residual hybrid beat the baseline on *new* data? (D1 v2)
 
-**Written 2026-11-25, after the D1 v1 results and before any D1 v2 run was collected.** The
+**Written 2026-11-25, after the D1 v1 results and before any D1 v2 run was collected.** *Status: run on frozen D1 v2 (`3f601a94fdbaf60d`) with no deviations; H1b not supported. See [`results_d1_v2.md`](results_d1_v2.md).* The
 hybrid was found in an exploratory analysis of D1 v1 (§9, `docs/results_d1_v1.md` §6). So it is
 judged only on rows that did not exist when it was proposed.
 

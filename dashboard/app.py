@@ -117,7 +117,8 @@ with tab_predict:
         "(docs/experiments.md); a single run inside or outside its interval says little."
     )
     st.info(
-        "On D1 v1 this gradient-boosting model is **less accurate** than a simple log-linear "
-        "baseline (cells + platform) on route and total time for unseen designs, while its "
-        "group-aware 90% intervals do hold their coverage. See docs/results_d1_v1.md."
+        "No runtime model has yet been shown to beat a simple log-linear baseline (cells + "
+        "platform) on unseen designs: it won on D1 v1, and on D1 v2 no difference was "
+        "significant. Group-aware 90% intervals stay close to their coverage. See "
+        "docs/results_d1_v1.md and docs/results_d1_v2.md."
     )

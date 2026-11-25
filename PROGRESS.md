@@ -170,3 +170,16 @@ override conflicts with it. In the image, 20 design configs fix the floorplan (`
   - 186 runs in about 4–5 chunks, with no new gcd runs.
   - The stopping rule is to freeze when the sweep completes or after 5 chunks.
   - First observation: high-utilization configs without routability-driven placement can congest detailed routing on sky130hd. Example: a 2.2k-cell FSM with about 30k open violations after 6 min. Such runs are kept as genuine `timeout` outcomes.
+- **Collected and frozen.** `d1_v2.yaml` completed in 5 chunks (v2c01–v2c05; v2c00 was the validation round).
+  - New runs: 186, of which 179 succeeded, 3 failed and 4 timed out. Every failure and timeout is a genuine flow outcome:
+    - PDN-0185 on a tiny FSM on ihp-sg13g2;
+    - ORFS's own LEC check cannot load tage_update's generated SRAMs;
+    - detailed-route congestion for chi_async_bridge on asap7 and a 128-state FSM on sky130hd.
+  - D1 v2: `data/d1/d1_v2.parquet`, hash `3f601a94fdbaf60d`, git `f765795`. 354 rows, 18 groups. Every platform now has 16–27 rows of 1k–5k cells.
+- **E1b result ([`docs/results_d1_v2.md`](docs/results_d1_v2.md)): H1b not supported.**
+  - On the 179 new rows the hybrid has the lowest MAE: route 0.537 vs B1 0.673 vs HGB 0.575; total 0.430 vs 0.565 vs 0.439.
+  - ΔMAE hybrid − B1: route −0.135 [−0.312, +0.062], total −0.135 [−0.311, +0.054]. Only 9 groups have new rows, and they disagree (gen_alu goes the other way).
+  - Secondary 1: the D1 v1 ordering "B1 beats HGB" did not repeat. HGB − B1 is −0.098 / −0.126, with CIs that include 0.
+  - Secondary 4: group-OOF intervals on new rows cover 87.7% (HGB) and 82–83% (hybrid, about 10% narrower). Every CI includes 90%.
+  - Secondary 5: placement information still does not help (−0.008 [−0.097, +0.084]).
+  - **Conclusion:** no runtime model has been shown to beat B1 on unseen design groups. The limit is the number of design groups, not the number of runs.

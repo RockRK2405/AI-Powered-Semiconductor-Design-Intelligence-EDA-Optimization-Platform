@@ -1,6 +1,6 @@
 # Project Explanation (living document; only describes what actually exists)
 
-## 30-second version (as of Phase 2, complete)
+## 30-second version (as of Phase 2 and its D1 v2 round)
 
 > SiliconAI is an ML layer on top of the open-source OpenROAD chip-design flow. It predicts how
 > long each stage of a chip-implementation run will take, with calibrated uncertainty, and it is
@@ -11,6 +11,9 @@
 >   I traced the cause to a gap in the data: no mid-size designs outside one platform.
 > - Naive conformal intervals collapse from 91–93% (random splits) to 53–57% coverage on unseen designs, and
 >   group-aware calibration restores 92–94%.
+> - I pre-registered a fix: a residual hybrid, tested only on 179 new runs collected afterwards. It had the lowest
+>   error, but the CI included zero (9 design groups), so I report it as not supported. What limits the
+>   evidence is the number of design families, not the number of runs.
 
 ## Why the project exists (research-backed)
 
@@ -73,6 +76,21 @@ All from the 16-run pilot on a 4-vCPU cloud VM (`data/pilot_phase1/`). **Quote o
 - 6 of 16 pilot runs failed: utilization overrides conflict with designs that fix their floorplan
   (`FLOORPLAN_DEF`). That became a preflight check for Phase 2, and a source of real failure logs.
 
+**D1 v2 round (docs/results_d1_v2.md):**
+- I wrote the E1b protocol and committed it *before* collecting D1 v2, and scored only rows that did not exist when I proposed the
+  hybrid. The stopping rule was 5 chunks or sweep complete, and the sweep completed in 5.
+- On the new rows, MAE of ln seconds:
+  - Hybrid: route 0.537, total 0.430.
+  - B1: route 0.673, total 0.565.
+  - HGB: route 0.575, total 0.439.
+  - ΔMAE hybrid − B1 = −0.135 [−0.312, +0.062] for route, and similar for total. **Not supported.**
+- Why the CI is wide: 9 groups that disagree. The hybrid wins big on addtree/mac, where B1 is off by about 2.2×, and loses on alu.
+- The D1 v1 ordering (B1 beats HGB) didn't repeat either. I say "no model has been shown to beat B1", not
+  "HGB is better now".
+- Group-OOF intervals on the new rows cover 88% (HGB) and 82–83% (hybrid, about 10% narrower). All CIs include 90%.
+- Flow failures I kept as data, not bugs: a power-grid strap error on a tiny ihp-sg13g2 core, and ORFS's own
+  equivalence check failing on generated SRAMs (ORFS already disables it for cva6 for the same reason).
+
 ## Likely questions
 
 - *Why not just use CircuitNet?* It has no confirmed runtime/memory labels, its N28 node is
@@ -85,5 +103,10 @@ All from the 16-run pilot on a 4-vCPU cloud VM (`data/pilot_phase1/`). **Quote o
   comparison, so I can't quietly swap in the winner. The analysis shows *why* (platform × size
   coverage), which tells me what data to collect next. A learned model that beat B0 but not B1
   would have been easy to over-sell.
+- *You ran a second experiment and it also failed. Why keep going?* Both were pre-registered, so a null
+  result is information. It moved the bottleneck from "missing platform × size data" (fixed, and the
+  gap is visibly filled) to "too few design families", and that tells me what to collect next.
+  Without the protocol I could have reported the all-rows numbers (hybrid 0.453 vs B1 0.589), but those
+  include the data that suggested the hybrid.
 - *Why are your intervals so wide?* Because they're honest on unseen designs. The naive ones are about 2.5×
   narrower, and on unseen designs they're wrong almost half the time.
