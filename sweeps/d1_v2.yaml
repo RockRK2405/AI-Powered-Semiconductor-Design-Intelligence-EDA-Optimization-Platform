@@ -1,0 +1,122 @@
+# D1 v2 sweep (docs/experiments.md §10; pre-registered before collection).
+# Purpose: fill the platform x size gap found in D1 v1 (docs/results_d1_v1.md §6).
+#   A. the 21 D1 v1 generated designs on asap7, gf180, ihp-sg13g2, sky130hd (2 configs each);
+#   B. two larger generated designs (~5-10k cells) on all five platforms (default config);
+#   C. four bundled asap7 designs not in D1 v1 (new design groups; no blocks or macros).
+# No new gcd runs. Stopping rule: freeze after this sweep completes or 5 chunks.
+# The v2c00 validation runs (gen_validate_v2.yaml) use the same designs' default configs and
+# are not repeated: their run ids coincide with this plan's default-config runs.
+name: d1_v2
+target: finish
+timeout_s: 1800
+seed: 20261125
+default_repeats: 1
+space:
+  CORE_UTILIZATION: ["30", "40", "50", "60"]
+  PLACE_DENSITY_LB_ADDON: ["0.1", "0.2", "0.3"]
+  GPL_TIMING_DRIVEN: ["0", "1"]
+  GPL_ROUTABILITY_DRIVEN: ["0", "1"]
+  TNS_END_PERCENT: ["5", "100"]
+  SYNTH_HIERARCHICAL: ["0", "1"]
+designs:
+  # --- A. generated designs on the four platforms added in D1 v2
+  - {generate: {family: mult, params: {width: 8}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: mult, params: {width: 16}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: mult, params: {width: 32}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: addtree, params: {inputs: 8, width: 8}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: addtree, params: {inputs: 16, width: 16}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: addtree, params: {inputs: 32, width: 16}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: mac, params: {lanes: 2, width: 8}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: mac, params: {lanes: 4, width: 8}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: mac, params: {lanes: 8, width: 8}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: fifo, params: {depth: 8, width: 8}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: fifo, params: {depth: 16, width: 16}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: fifo, params: {depth: 32, width: 32}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: fsm, params: {states: 16, inputs: 2, outputs: 4, seed: 2}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: fsm, params: {states: 32, inputs: 2, outputs: 4, seed: 1}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: fsm, params: {states: 128, inputs: 3, outputs: 8, seed: 3}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: crc, params: {width: 8}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: crc, params: {width: 32}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: crc, params: {width: 64}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: alu, params: {width: 8}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: alu, params: {width: 32}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: alu, params: {width: 64}, platform: asap7}, n_configs: 2, expected_s: 80}
+  - {generate: {family: mult, params: {width: 8}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: mult, params: {width: 16}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: mult, params: {width: 32}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: addtree, params: {inputs: 8, width: 8}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: addtree, params: {inputs: 16, width: 16}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: addtree, params: {inputs: 32, width: 16}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: mac, params: {lanes: 2, width: 8}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: mac, params: {lanes: 4, width: 8}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: mac, params: {lanes: 8, width: 8}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: fifo, params: {depth: 8, width: 8}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: fifo, params: {depth: 16, width: 16}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: fifo, params: {depth: 32, width: 32}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: fsm, params: {states: 16, inputs: 2, outputs: 4, seed: 2}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: fsm, params: {states: 32, inputs: 2, outputs: 4, seed: 1}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: fsm, params: {states: 128, inputs: 3, outputs: 8, seed: 3}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: crc, params: {width: 8}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: crc, params: {width: 32}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: crc, params: {width: 64}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: alu, params: {width: 8}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: alu, params: {width: 32}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: alu, params: {width: 64}, platform: gf180}, n_configs: 2, expected_s: 70}
+  - {generate: {family: mult, params: {width: 8}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: mult, params: {width: 16}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: mult, params: {width: 32}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: addtree, params: {inputs: 8, width: 8}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: addtree, params: {inputs: 16, width: 16}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: addtree, params: {inputs: 32, width: 16}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: mac, params: {lanes: 2, width: 8}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: mac, params: {lanes: 4, width: 8}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: mac, params: {lanes: 8, width: 8}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: fifo, params: {depth: 8, width: 8}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: fifo, params: {depth: 16, width: 16}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: fifo, params: {depth: 32, width: 32}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: fsm, params: {states: 16, inputs: 2, outputs: 4, seed: 2}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: fsm, params: {states: 32, inputs: 2, outputs: 4, seed: 1}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: fsm, params: {states: 128, inputs: 3, outputs: 8, seed: 3}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: crc, params: {width: 8}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: crc, params: {width: 32}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: crc, params: {width: 64}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: alu, params: {width: 8}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: alu, params: {width: 32}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: alu, params: {width: 64}, platform: ihp-sg13g2}, n_configs: 2, expected_s: 120}
+  - {generate: {family: mult, params: {width: 8}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: mult, params: {width: 16}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: mult, params: {width: 32}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: addtree, params: {inputs: 8, width: 8}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: addtree, params: {inputs: 16, width: 16}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: addtree, params: {inputs: 32, width: 16}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: mac, params: {lanes: 2, width: 8}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: mac, params: {lanes: 4, width: 8}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: mac, params: {lanes: 8, width: 8}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: fifo, params: {depth: 8, width: 8}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: fifo, params: {depth: 16, width: 16}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: fifo, params: {depth: 32, width: 32}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: fsm, params: {states: 16, inputs: 2, outputs: 4, seed: 2}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: fsm, params: {states: 32, inputs: 2, outputs: 4, seed: 1}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: fsm, params: {states: 128, inputs: 3, outputs: 8, seed: 3}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: crc, params: {width: 8}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: crc, params: {width: 32}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: crc, params: {width: 64}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: alu, params: {width: 8}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: alu, params: {width: 32}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  - {generate: {family: alu, params: {width: 64}, platform: sky130hd}, n_configs: 2, expected_s: 100}
+  # --- B. larger generated designs on all five platforms
+  - {generate: {family: mac, params: {lanes: 16, width: 8}, platform: nangate45}, expected_s: 400}
+  - {generate: {family: addtree, params: {inputs: 64, width: 16}, platform: nangate45}, expected_s: 400}
+  - {generate: {family: mac, params: {lanes: 16, width: 8}, platform: asap7}, expected_s: 400}
+  - {generate: {family: addtree, params: {inputs: 64, width: 16}, platform: asap7}, expected_s: 400}
+  - {generate: {family: mac, params: {lanes: 16, width: 8}, platform: gf180}, expected_s: 400}
+  - {generate: {family: addtree, params: {inputs: 64, width: 16}, platform: gf180}, expected_s: 400}
+  - {generate: {family: mac, params: {lanes: 16, width: 8}, platform: ihp-sg13g2}, expected_s: 400}
+  - {generate: {family: addtree, params: {inputs: 64, width: 16}, platform: ihp-sg13g2}, expected_s: 400}
+  - {generate: {family: mac, params: {lanes: 16, width: 8}, platform: sky130hd}, expected_s: 400}
+  - {generate: {family: addtree, params: {inputs: 64, width: 16}, platform: sky130hd}, expected_s: 400}
+  # --- C. bundled asap7 designs not in D1 v1 (one new design group each)
+  - {config: ./designs/asap7/mock-alu/config.mk, group: mock_alu, n_configs: 2, expected_s: 600}
+  - {config: ./designs/asap7/ethmac/config.mk, group: ethmac, n_configs: 2, expected_s: 600}
+  - {config: ./designs/asap7/chi_async_bridge/config.mk, group: chi_async_bridge, n_configs: 2, expected_s: 600}
+  - {config: ./designs/asap7/tage_update/config.mk, group: tage_update, n_configs: 2, expected_s: 600}
