@@ -161,3 +161,12 @@ override conflicts with it. In the image, 20 design configs fix the floorplan (`
 - **Next:**
   - Your review.
   - Proposed: before Phase 3, a short D1 v2 round. Pre-register the hybrid vs B1 vs HGB comparison, then collect generated and mid-size designs on the other four platforms (P2-16, P2-18). Alternatively, move straight to Phase 3 (log intelligence: fault injectors, the D2 failure-log corpus, E5) and treat D1 v2 as later work. Phase 2's acceptance criteria (E1–E4 executed with reported numbers; leakage tests pass) are met either way.
+
+### D1 v2 round (your decision, 2026-11-25: option A, before Phase 3)
+
+- **Pre-registered first.** Protocol E1b (`docs/experiments.md` §10) was committed in `8feed44`, before any D1 v2 run. It tests the residual hybrid against B1, scoring only rows new since D1 v1.
+- **Generated designs on all five platforms** (P2-16). Clock periods are scaled per platform. All 8 validation runs succeeded, with final setup slack at 59–75% of the period on every platform; on nangate45 it is 66%.
+- **Collection** (`sweeps/d1_v2.yaml`):
+  - 186 runs in about 4–5 chunks, with no new gcd runs.
+  - The stopping rule is to freeze when the sweep completes or after 5 chunks.
+  - First observation: high-utilization configs without routability-driven placement can congest detailed routing on sky130hd. Example: a 2.2k-cell FSM with about 30k open violations after 6 min. Such runs are kept as genuine `timeout` outcomes.

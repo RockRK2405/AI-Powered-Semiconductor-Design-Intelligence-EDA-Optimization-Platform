@@ -42,9 +42,9 @@ Each item is specific and independently checkable. IDs are stable.
 - [x] P2-13 Dataset build excludes `failed` config-error runs from runtime training sets and tags them for the log corpus.
 - [x] P2-14 Collect D1 v1: `sweeps/d1_core.yaml` complete (186 runs, chunks c01–c07). *(`d1_ext` deliberately not collected: E1 showed the gap is platform × size coverage, which `d1_ext` does not fill; see P2-18.)*
 - [x] P2-15 Freeze D1 v1 (hash `ee0aebdd56278380`) and run E1–E4; results, including negative ones, in `docs/results_d1_v1.md`.
-- [ ] P2-16 Generated designs on platforms other than nangate45 (needs per-platform PDN/SDC units).
+- [x] P2-16 Generated designs on asap7, gf180, ihp-sg13g2 and sky130hd: platform default PDN, clock period scaled by each platform's gcd period (asap7 in ps); 8/8 validation runs succeeded (v2c00).
 - [x] P2-17 Data-integrity fixes found in chunk c04 (ADR-015): nested LEC timing no longer double-counted; leftover `.tmp` logs handled; clean run directories before every run; `siliconai reparse`; build refuses runs whose step times exceed wall time. Registry and Phase 1 report corrected and logged.
-- [ ] P2-18 D1 v2 sweep: mid-size (1k–5k cells) and large designs on asap7, gf180, ihp-sg13g2 and sky130hd; fewer gcd configs; more design groups. Depends on P2-16.
-- [ ] P2-19 Pre-register and run, on D1 v2: residual hybrid (B1 + HGB on residuals) vs B1 vs HGB; interval width vs. horizon; E2 repeated with the better model.
+- [ ] P2-18 *(in progress: `sweeps/d1_v2.yaml`, 186 runs, chunks v2c00…)* D1 v2 sweep: mid-size (1k–5k cells) and large designs on asap7, gf180, ihp-sg13g2 and sky130hd; fewer gcd configs; more design groups. Depends on P2-16.
+- [ ] P2-19 *(pre-registered as E1b, `docs/experiments.md` §10; code ready; runs after the D1 v2 freeze)* Pre-register and run, on D1 v2: residual hybrid (B1 + HGB on residuals) vs B1 vs HGB; interval width vs. horizon; E2 repeated with the better model.
 - [ ] P2-20 E4 follow-ups: an OOD score based on platform × size support; risk–coverage curves; comparison with abstaining on the widest CQR/Mondrian intervals.
 - [ ] P2-21 Dashboard: show the B1 prediction next to HGB, since B1 is the better point model on D1 v1.
