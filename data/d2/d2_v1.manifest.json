@@ -1,0 +1,63 @@
+{
+  "chunks": 2,
+  "class_status_counts": {
+    "elaboration_error": {
+      "failed": 42,
+      "success": 2
+    },
+    "floorplan_capacity": {
+      "failed": 27,
+      "success": 12
+    },
+    "missing_file": {
+      "failed": 50
+    },
+    "none": {
+      "success": 13
+    },
+    "out_of_memory": {
+      "failed": 39
+    },
+    "routing_resources": {
+      "failed": 15,
+      "success": 11
+    },
+    "sdc_error": {
+      "failed": 39
+    },
+    "syntax_error": {
+      "failed": 44
+    },
+    "timeout": {
+      "timeout": 39
+    }
+  },
+  "content_hash": "3d6cb327b1ed3b5d",
+  "groups": [
+    "aes",
+    "dynamic_node",
+    "gen_addtree",
+    "gen_alu",
+    "gen_crc",
+    "gen_fifo",
+    "gen_fsm",
+    "gen_mac",
+    "gen_mult",
+    "picorv32",
+    "riscv32i",
+    "spi",
+    "uart"
+  ],
+  "log_archives": {
+    "d2c01.tar.gz": "887ddb4cb7c51661292de3a202a6ac7fa737c1d221ede78bc6a2ac27f4f9810d",
+    "d2c02.tar.gz": "780e15643cee0dbcbc7d94e084a7f5d076290478e9504f17aa1870b7d88614b8"
+  },
+  "records": "d2_v1_records.jsonl",
+  "runs_final": 333,
+  "runs_planned": 333,
+  "status_counts": {
+    "failed": 256,
+    "success": 38,
+    "timeout": 39
+  }
+}
