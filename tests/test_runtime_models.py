@@ -100,3 +100,16 @@ def test_group_bootstrap_ci():
     assert res["ci_hi"] < 0 and res["diff"] == pytest.approx(-0.05)
     same = group_bootstrap_diff(a, a, groups, n_boot=200)
     assert same["ci_lo"] == same["ci_hi"] == 0.0
+
+
+@pytest.mark.parametrize("name", ["hgb", "hgb_q"])
+def test_hgb_tolerates_a_column_missing_in_every_training_row(name):
+    # Regression: scikit-learn 1.9.1 HGB crashed while binning an all-NaN column, which
+    # happens when a fold's training groups never report a metric (D1 v1, first E1 run).
+    rng = np.random.default_rng(0)
+    x = pd.DataFrame({"a": rng.normal(size=40), "gone": np.nan})
+    y = x["a"].to_numpy() * 2.0
+    kw = {"quantile": 0.5} if name == "hgb_q" else {}
+    model = make_model(name, max_iter=20, **kw).fit(x, y)
+    test = pd.DataFrame({"a": [0.0, 1.0], "gone": [3.0, np.nan]})
+    assert np.isfinite(model.predict(test)).all()

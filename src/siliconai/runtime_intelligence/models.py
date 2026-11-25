@@ -10,7 +10,7 @@ from collections.abc import Iterable
 
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator, RegressorMixin
+from sklearn.base import BaseEstimator, RegressorMixin, TransformerMixin
 from sklearn.ensemble import HistGradientBoostingRegressor, RandomForestRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression, Ridge
@@ -60,6 +60,25 @@ class LogLinearCells(BaseEstimator, RegressorMixin):
         return self.lr_.predict(self._design(x))
 
 
+class DropAllMissing(BaseEstimator, TransformerMixin):
+    """Drop columns that are entirely missing in the training rows.
+
+    Such a column carries no information. scikit-learn 1.9.1's HistGradientBoosting crashes
+    on one (``window shape cannot be larger than input array shape`` while binning), which
+    happens when a fold's training groups never produce a given metric.
+    """
+
+    def fit(self, x: pd.DataFrame | np.ndarray, y: object = None) -> DropAllMissing:
+        values = np.asarray(x, dtype=float)
+        self.keep_ = ~np.isnan(values).all(axis=0)
+        return self
+
+    def transform(self, x: pd.DataFrame | np.ndarray) -> pd.DataFrame | np.ndarray:
+        if isinstance(x, pd.DataFrame):
+            return x.loc[:, self.keep_]
+        return np.asarray(x)[:, self.keep_]
+
+
 def _platform_of(x: pd.DataFrame) -> np.ndarray:
     plat_cols = [c for c in x.columns if c.startswith("plat__")]
     if not plat_cols:
@@ -89,10 +108,16 @@ def make_model(name: str, seed: int = 0, **params: object) -> BaseEstimator:
             ),
         )
     if name == "hgb":
-        return HistGradientBoostingRegressor(**{"max_iter": 300, "random_state": seed, **params})
+        return make_pipeline(
+            DropAllMissing(),
+            HistGradientBoostingRegressor(**{"max_iter": 300, "random_state": seed, **params}),
+        )
     if name == "hgb_q":  # quantile model for CQR; pass quantile=...
-        return HistGradientBoostingRegressor(
-            **{"loss": "quantile", "max_iter": 300, "random_state": seed, **params}
+        return make_pipeline(
+            DropAllMissing(),
+            HistGradientBoostingRegressor(
+                **{"loss": "quantile", "max_iter": 300, "random_state": seed, **params}
+            ),
         )
     raise ValueError(f"unknown model {name!r}")
 
