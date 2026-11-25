@@ -1,0 +1,329 @@
+{
+  "dataset_hash": "3d6cb327b1ed3b5d",
+  "exploratory": true,
+  "kw_misses": [
+    {
+      "class": "syntax_error",
+      "group": "aes",
+      "kw": "missing_file",
+      "tpl": "missing_file",
+      "variant": "misspelled_keyword"
+    },
+    {
+      "class": "syntax_error",
+      "group": "aes",
+      "kw": "missing_file",
+      "tpl": "missing_file",
+      "variant": "unbalanced_end"
+    },
+    {
+      "class": "syntax_error",
+      "group": "aes",
+      "kw": "missing_file",
+      "tpl": "missing_file",
+      "variant": "stray_token"
+    },
+    {
+      "class": "elaboration_error",
+      "group": "aes",
+      "kw": "missing_file",
+      "tpl": "missing_file",
+      "variant": "undefined_module"
+    },
+    {
+      "class": "elaboration_error",
+      "group": "aes",
+      "kw": "missing_file",
+      "tpl": "missing_file",
+      "variant": "duplicate_module"
+    },
+    {
+      "class": "elaboration_error",
+      "group": "aes",
+      "kw": "missing_file",
+      "tpl": "missing_file",
+      "variant": "undeclared_identifier"
+    },
+    {
+      "class": "syntax_error",
+      "group": "aes",
+      "kw": "missing_file",
+      "tpl": "missing_file",
+      "variant": "missing_semicolon"
+    },
+    {
+      "class": "syntax_error",
+      "group": "dynamic_node",
+      "kw": "unknown",
+      "tpl": "sdc_error",
+      "variant": "stray_token"
+    },
+    {
+      "class": "syntax_error",
+      "group": "dynamic_node",
+      "kw": "unknown",
+      "tpl": "sdc_error",
+      "variant": "missing_semicolon"
+    },
+    {
+      "class": "elaboration_error",
+      "group": "dynamic_node",
+      "kw": "unknown",
+      "tpl": "sdc_error",
+      "variant": "duplicate_module"
+    },
+    {
+      "class": "syntax_error",
+      "group": "dynamic_node",
+      "kw": "unknown",
+      "tpl": "sdc_error",
+      "variant": "misspelled_keyword"
+    },
+    {
+      "class": "missing_file",
+      "group": "dynamic_node",
+      "kw": "unknown",
+      "tpl": "sdc_error",
+      "variant": "include"
+    },
+    {
+      "class": "elaboration_error",
+      "group": "dynamic_node",
+      "kw": "unknown",
+      "tpl": "sdc_error",
+      "variant": "wrong_top"
+    },
+    {
+      "class": "syntax_error",
+      "group": "dynamic_node",
+      "kw": "unknown",
+      "tpl": "sdc_error",
+      "variant": "unbalanced_end"
+    }
+  ],
+  "sensitivity": {
+    "P1_design_macro_f1_tpl_minus_kw": {
+      "a": 0.8869015189914411,
+      "b": 0.9888689526847422,
+      "ci_hi": -0.07832213588041659,
+      "ci_lo": -0.12602727702435962,
+      "diff": -0.10196743369330108,
+      "n": 288,
+      "n_groups": 13
+    },
+    "dropped": [
+      "elaboration_error/duplicate_module",
+      "elaboration_error/undeclared_identifier",
+      "elaboration_error/undefined_module",
+      "syntax_error/missing_semicolon",
+      "syntax_error/misspelled_keyword",
+      "syntax_error/stray_token",
+      "syntax_error/unbalanced_end"
+    ]
+  },
+  "templates": {
+    "classes": {
+      "elaboration_error": {
+        "best_gold_rank": 1,
+        "top5": [
+          {
+            "coef": 1.613,
+            "template": "<*>:<*>: ERROR: Re-definition of module <*>!"
+          },
+          {
+            "coef": 1.328,
+            "template": "<*>:<*>: ERROR: Identifier <*> is implicitly declared and `default_nettype is set to none."
+          },
+          {
+            "coef": 1.315,
+            "template": "ERROR: Module <*> referenced in module <*> in cell <*> is not part of the design."
+          },
+          {
+            "coef": 1.153,
+            "template": "ERROR: Module <*> not found!"
+          },
+          {
+            "coef": 1.153,
+            "template": "ERROR: TCL interpreter returned an error: Yosys command produced an error"
+          }
+        ]
+      },
+      "floorplan_capacity": {
+        "best_gold_rank": 5,
+        "top5": [
+          {
+            "coef": 1.104,
+            "template": "invoked from within"
+          },
+          {
+            "coef": 0.978,
+            "template": "(file <*> line <*>)"
+          },
+          {
+            "coef": 0.862,
+            "template": "<*>"
+          },
+          {
+            "coef": 0.767,
+            "template": "Writing failure checkpoint <*>"
+          },
+          {
+            "coef": 0.71,
+            "template": "log_cmd read_def -floorplan_initialize $env(FLOORPLAN_DEF)"
+          }
+        ]
+      },
+      "missing_file": {
+        "best_gold_rank": 1,
+        "top5": [
+          {
+            "coef": 2.388,
+            "template": "make: *** No rule to make target <*>, needed by <*>. Stop."
+          },
+          {
+            "coef": 1.584,
+            "template": "ERROR: Can<*>!"
+          },
+          {
+            "coef": 0.265,
+            "template": "<*> Executing OPT_EXPR pass (perform const folding)."
+          },
+          {
+            "coef": 0.26,
+            "template": "<*> Executing OPT_MERGE pass (detect identical cells)."
+          },
+          {
+            "coef": 0.255,
+            "template": "<*> Executing OPT_CLEAN pass (remove unused cells and wires)."
+          }
+        ]
+      },
+      "out_of_memory": {
+        "best_gold_rank": 780,
+        "top5": [
+          {
+            "coef": 0.958,
+            "template": "<*> | <*> | <*> | <*> | <*> |"
+          },
+          {
+            "coef": 0.763,
+            "template": "[InitialPlace] Iter: <*> conjugate gradient residual: <*> HPWL: <*>"
+          },
+          {
+            "coef": 0.605,
+            "template": "elapsed time = <*>:<*>:<*>, memory = <*> (MB)."
+          },
+          {
+            "coef": 0.605,
+            "template": "Completing <*> with <*> violations."
+          },
+          {
+            "coef": 0.558,
+            "template": "[INFO <*> <*> instances: <*>"
+          }
+        ]
+      },
+      "routing_resources": {
+        "best_gold_rank": 2,
+        "top5": [
+          {
+            "coef": 1.916,
+            "template": "<*># <*> in <*>"
+          },
+          {
+            "coef": 1.411,
+            "template": "Error: initMazeIdx_connFig via no idx (<*>, <*>) <*>"
+          },
+          {
+            "coef": 1.149,
+            "template": "[WARNING DRT-0204] Cut layer <*> has no default via defined."
+          },
+          {
+            "coef": 1.041,
+            "template": "[INFO GRT-0102] Start extra iteration <*>/<*>"
+          },
+          {
+            "coef": 0.817,
+            "template": "[INFO GPL-0086] Inflation <*> um^2 (<*> of movable), <*> of the <*> budget spent; target density <*>."
+          }
+        ]
+      },
+      "sdc_error": {
+        "best_gold_rank": 12,
+        "top5": [
+          {
+            "coef": 1.34,
+            "template": "invoked from within"
+          },
+          {
+            "coef": 1.271,
+            "template": "(procedure <*> line <*>)"
+          },
+          {
+            "coef": 1.097,
+            "template": "\"if [catch {open $filename r} stream] {"
+          },
+          {
+            "coef": 1.097,
+            "template": "if { [file extension $filename] == <*> } {"
+          },
+          {
+            "coef": 1.097,
+            "template": "sta_error <*> <*>"
+          }
+        ]
+      },
+      "syntax_error": {
+        "best_gold_rank": 1,
+        "top5": [
+          {
+            "coef": 2.566,
+            "template": "<*>:<*>: ERROR: syntax error, unexpected <*>"
+          },
+          {
+            "coef": 1.724,
+            "template": "<*>:<*>: ERROR: syntax error, unexpected end of file, expecting TOK_ID or <*>"
+          },
+          {
+            "coef": 1.175,
+            "template": "<*>. Executing <*> frontend: <*>"
+          },
+          {
+            "coef": 0.681,
+            "template": "Using ABC speed script."
+          },
+          {
+            "coef": 0.647,
+            "template": "Elapsed time: <*>:<*>[h:]min:sec. CPU time: user <*> sys <*> (<*>). Peak memory: <*>"
+          }
+        ]
+      },
+      "timeout": {
+        "best_gold_rank": 3,
+        "top5": [
+          {
+            "coef": 1.021,
+            "template": "Total wire length on LAYER <*> = <*> um."
+          },
+          {
+            "coef": 0.86,
+            "template": "<*> <*>"
+          },
+          {
+            "coef": 0.591,
+            "template": "make: *** [Makefile:<*>: <*>] Terminated"
+          },
+          {
+            "coef": 0.58,
+            "template": "<*> | <*> | <*> | <*> | <*> |"
+          },
+          {
+            "coef": 0.545,
+            "template": "Total number of vias = <*>."
+          }
+        ]
+      }
+    },
+    "n_templates": 931
+  }
+}

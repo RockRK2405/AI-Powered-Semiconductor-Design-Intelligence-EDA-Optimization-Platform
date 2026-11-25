@@ -154,3 +154,36 @@ Status values: **Proposed** (awaiting your review) · **Accepted** · **Supersed
   the recorded precision), not from ORFS internals. An exact coincidence between unrelated steps is
   negligible, and the negative-remainder guard catches implausible cases.
 
+
+## ADR-016 — Drain template mining implemented in the repository
+- **Status:** Accepted (Phase 3, 2026-11-25).
+- **Context:** E5 needs log templates learned from training runs only, with a `match` that never
+  learns from test runs, so a held-out design cannot leak into the template set. Installing the
+  `drain3` package was refused by this environment's permission policy.
+- **Choice:** `log_intelligence/drain.py` is a small, tested implementation of Drain (fixed-depth
+  prefix tree, token-similarity threshold). Parameters are depth 4 and similarity 0.5, fixed in the protocol.
+  - It masks paths, quoted strings, hex and stand-alone numbers before parsing. Message codes such as `GPL-0301` and units such as `um^2` are kept.
+  - `add`/`fit` learn; `match` only looks up.
+  - Line length and token count are capped, because logs are untrusted.
+- **Consequence found in E5 (post hoc):** masking every stand-alone number also erases make's exit
+  code, so `Error 247` (killed for memory) and `Error 2` become one template. A later version
+  should keep exit codes and message IDs (TODO P3-13). Under the pre-registered protocol the masking
+  was not changed after seeing D2.
+- **Trade-offs:** about 150 lines to maintain, and no upstream fixes. It is easy to audit, and its behaviour is fixed by tests.
+
+## ADR-017 — Faults are injected as read-only overlay designs; RTL faults skipped on the slang frontend
+- **Status:** Accepted (Phase 3, 2026-11-25).
+- **Context:** fault injection must not modify the ORFS image or the original design. It must be
+  reproducible from the repository, and every faulted run must be tied to a known label decided before it runs.
+- **Choice:**
+  - Each faulted design is a directory `sai_fi_<name>_<hash>`. It holds the base `config.mk` followed by an injection block, plus mutated copies of RTL/SDC where the fault needs them. It is bind-mounted read-only next to the original design (as for generated designs, ADR-013).
+  - The directory name hashes the content, so a run ID identifies its exact fault.
+  - Flow variables that the platform config reassigns are injected with make's `override export`, for example the routing layers on nangate45.
+  - On the two bases whose ORFS config uses the slang frontend, the 9 RTL-frontend faults are skipped. In this image slang prints the same single line ("Design elaboration failed") for all of them, so no log-based method could separate them, and including them would only add noise labels.
+- **Known defect (post hoc, results_d2 §3):** copying a mutated RTL file into the overlay breaks
+  a *relative* `` `include `` in the original source directory. On aes this turned 7 syntax and
+  elaboration injections into missing-include failures. Fix before reuse: put the original source directory
+  on the include path (TODO P3-11).
+- **Trade-offs:**
+  - Injected faults are cleaner than real failures.
+  - Some injections do not manifest on every design (25 of 320 on D2). They are reported, not relabelled.

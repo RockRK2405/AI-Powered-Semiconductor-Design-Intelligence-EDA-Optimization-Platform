@@ -167,7 +167,7 @@ judged only on rows that did not exist when it was proposed.
 
 ## 11. E5 — H5: log diagnosis on held-out designs and fault variants (D2)
 
-**Written 2026-11-25, after the development-design probes and before any D2 run was collected.**
+**Written 2026-11-25, after the development-design probes and before any D2 run was collected.** *Status: run on frozen D2 v1 (`3d6cb327b1ed3b5d`) with no deviations. H5a and H5b are not supported: the keyword baseline is significantly better on all three primary endpoints. See [`results_d2.md`](results_d2.md).*
 Code: `src/siliconai/log_intelligence/` (`faults.py`, `corpus.py`, `logs.py`, `rules.py`,
 `drain.py`); data spec `sweeps/d2.yaml`.
 

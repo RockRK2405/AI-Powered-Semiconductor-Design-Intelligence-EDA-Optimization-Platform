@@ -1,0 +1,518 @@
+{
+  "dataset": "data/d2/d2_v1.manifest.json",
+  "dataset_hash": "3d6cb327b1ed3b5d",
+  "experiment": "e5",
+  "finished_at": "2026-11-25T19:50:22.596113+00:00",
+  "git_sha": "50c6acad18424e72f1dfc6ebfc381e82b0568ab3",
+  "protocol": "docs/experiments.md \u00a711",
+  "result": {
+    "H5a_supported": false,
+    "H5b_supported": false,
+    "P1_design_macro_f1_tpl_minus_kw": {
+      "a": 0.8686133323280046,
+      "b": 0.9701546453307858,
+      "ci_hi": -0.07782555207810196,
+      "ci_lo": -0.12576387605245481,
+      "diff": -0.10154131300278113,
+      "n": 295,
+      "n_groups": 13
+    },
+    "P2_variant_macro_f1_tpl_minus_kw": {
+      "a": 0.520634818705004,
+      "b": 0.9701546453307858,
+      "ci_hi": -0.4158630039103042,
+      "ci_lo": -0.4786254001919236,
+      "diff": -0.4495198266257817,
+      "n": 295,
+      "n_groups": 13
+    },
+    "P3_detail": {
+      "errorlines_hit_rate_by_class": {
+        "elaboration_error": 0.7297297297297297,
+        "floorplan_capacity": 0.0,
+        "missing_file": 0.2,
+        "out_of_memory": 1.0,
+        "routing_resources": 0.8,
+        "sdc_error": 0.0,
+        "syntax_error": 1.0,
+        "timeout": 0.0
+      },
+      "tpl_hit_rate_by_class": {
+        "elaboration_error": 0.7837837837837838,
+        "floorplan_capacity": 0.0,
+        "missing_file": 0.74,
+        "out_of_memory": 0.0,
+        "routing_resources": 0.0,
+        "sdc_error": 0.0,
+        "syntax_error": 1.0,
+        "timeout": 0.07692307692307693
+      }
+    },
+    "P3_evidence_top3_tpl_minus_errorlines": {
+      "a": 0.3723404255319149,
+      "b": 0.4397163120567376,
+      "ci_hi": -0.04451674926364022,
+      "ci_lo": -0.09252669039145905,
+      "diff": -0.06737588652482274,
+      "n": 282,
+      "n_groups": 13
+    },
+    "P3_excluded_no_gold_line": 13,
+    "S1": {
+      "design": {
+        "kw": 0.9701546453307858,
+        "raw": 0.8116837094605143,
+        "svc": 0.9182642036101999,
+        "tpl": 0.8686133323280046
+      },
+      "raw_minus_tpl_design": {
+        "a": 0.8116837094605143,
+        "b": 0.8686133323280046,
+        "ci_hi": -0.028408762138115135,
+        "ci_lo": -0.0852409966147481,
+        "diff": -0.05692962286749037,
+        "n": 295,
+        "n_groups": 13
+      },
+      "svc_minus_tpl_design": {
+        "a": 0.9182642036101999,
+        "b": 0.8686133323280046,
+        "ci_hi": 0.07343762383592782,
+        "ci_lo": 0.031142230745887633,
+        "diff": 0.04965087128219525,
+        "n": 295,
+        "n_groups": 13
+      },
+      "variant": {
+        "kw": 0.9701546453307858,
+        "raw": 0.5198798535954451,
+        "svc": 0.6161303469070099,
+        "tpl": 0.520634818705004
+      }
+    },
+    "S2": {
+      "class_counts": {
+        "elaboration_error": 42,
+        "floorplan_capacity": 27,
+        "missing_file": 50,
+        "out_of_memory": 39,
+        "routing_resources": 15,
+        "sdc_error": 39,
+        "syntax_error": 44,
+        "timeout": 39
+      },
+      "confusion_design": {
+        "kw": {
+          "elaboration_error": {
+            "elaboration_error": 37,
+            "missing_file": 3,
+            "unknown": 2
+          },
+          "floorplan_capacity": {
+            "floorplan_capacity": 27
+          },
+          "missing_file": {
+            "missing_file": 49,
+            "unknown": 1
+          },
+          "out_of_memory": {
+            "out_of_memory": 39
+          },
+          "routing_resources": {
+            "routing_resources": 15
+          },
+          "sdc_error": {
+            "sdc_error": 39
+          },
+          "syntax_error": {
+            "missing_file": 4,
+            "syntax_error": 36,
+            "unknown": 4
+          },
+          "timeout": {
+            "timeout": 39
+          }
+        },
+        "tpl": {
+          "elaboration_error": {
+            "elaboration_error": 37,
+            "missing_file": 3,
+            "sdc_error": 2
+          },
+          "floorplan_capacity": {
+            "floorplan_capacity": 27
+          },
+          "missing_file": {
+            "floorplan_capacity": 12,
+            "missing_file": 37,
+            "sdc_error": 1
+          },
+          "out_of_memory": {
+            "missing_file": 1,
+            "out_of_memory": 35,
+            "routing_resources": 1,
+            "timeout": 2
+          },
+          "routing_resources": {
+            "routing_resources": 15
+          },
+          "sdc_error": {
+            "sdc_error": 39
+          },
+          "syntax_error": {
+            "missing_file": 4,
+            "sdc_error": 4,
+            "syntax_error": 36
+          },
+          "timeout": {
+            "floorplan_capacity": 3,
+            "out_of_memory": 8,
+            "timeout": 28
+          }
+        }
+      },
+      "confusion_variant": {
+        "tpl": {
+          "elaboration_error": {
+            "elaboration_error": 28,
+            "missing_file": 3,
+            "sdc_error": 1,
+            "syntax_error": 10
+          },
+          "floorplan_capacity": {
+            "floorplan_capacity": 20,
+            "sdc_error": 7
+          },
+          "missing_file": {
+            "floorplan_capacity": 13,
+            "missing_file": 14,
+            "sdc_error": 12,
+            "syntax_error": 11
+          },
+          "out_of_memory": {
+            "floorplan_capacity": 1,
+            "missing_file": 1,
+            "out_of_memory": 4,
+            "routing_resources": 12,
+            "timeout": 21
+          },
+          "routing_resources": {
+            "routing_resources": 14,
+            "timeout": 1
+          },
+          "sdc_error": {
+            "sdc_error": 39
+          },
+          "syntax_error": {
+            "elaboration_error": 9,
+            "missing_file": 4,
+            "syntax_error": 31
+          },
+          "timeout": {
+            "floorplan_capacity": 3,
+            "out_of_memory": 23,
+            "routing_resources": 4,
+            "timeout": 9
+          }
+        }
+      },
+      "macro_f1_by_origin_design": {
+        "generated": {
+          "kw": 1.0,
+          "n": 169,
+          "tpl": 0.8898723723723724
+        },
+        "orfs": {
+          "kw": 0.9111594202898551,
+          "n": 126,
+          "tpl": 0.8214298671373368
+        }
+      },
+      "per_class_f1_design": {
+        "kw": {
+          "elaboration_error": 0.9367088607594937,
+          "floorplan_capacity": 1.0,
+          "missing_file": 0.9245283018867925,
+          "out_of_memory": 1.0,
+          "routing_resources": 1.0,
+          "sdc_error": 1.0,
+          "syntax_error": 0.9,
+          "timeout": 1.0
+        },
+        "tpl": {
+          "elaboration_error": 0.9367088607594937,
+          "floorplan_capacity": 0.782608695652174,
+          "missing_file": 0.7789473684210526,
+          "out_of_memory": 0.8536585365853658,
+          "routing_resources": 0.967741935483871,
+          "sdc_error": 0.9176470588235294,
+          "syntax_error": 0.9,
+          "timeout": 0.8115942028985508
+        }
+      },
+      "per_class_f1_variant": {
+        "kw": {
+          "elaboration_error": 0.9367088607594937,
+          "floorplan_capacity": 1.0,
+          "missing_file": 0.9245283018867925,
+          "out_of_memory": 1.0,
+          "routing_resources": 1.0,
+          "sdc_error": 1.0,
+          "syntax_error": 0.9,
+          "timeout": 1.0
+        },
+        "tpl": {
+          "elaboration_error": 0.7088607594936709,
+          "floorplan_capacity": 0.625,
+          "missing_file": 0.3888888888888889,
+          "out_of_memory": 0.12121212121212122,
+          "routing_resources": 0.6222222222222222,
+          "sdc_error": 0.7959183673469388,
+          "syntax_error": 0.6458333333333334,
+          "timeout": 0.2571428571428571
+        }
+      }
+    },
+    "S3a_anomaly_auroc_failed_vs_clean": 0.8112125162972621,
+    "S3b_novel_class_auroc": 0.6136364755612099,
+    "S4_keyword_line_evidence_hit_rate": 0.9539007092198581,
+    "S5_natural": {
+      "aes_ihp-sg13g2_44136fa3_r0": {
+        "kw": "timeout",
+        "kw_line": "make[1]: *** wait: No child processes.  Stop.",
+        "label": "timeout",
+        "tpl": "timeout",
+        "tpl_evidence": [
+          "Total wire length on LAYER TopMetal2 = 0 um.",
+          "Total wire length on LAYER TopMetal1 = 0 um.",
+          "Total wire length on LAYER Metal5 = 32042 um."
+        ],
+        "tpl_max_proba": 0.40509511220479016
+      },
+      "aes_ihp-sg13g2_b3c1da72_r0": {
+        "kw": "timeout",
+        "kw_line": "make: *** [Makefile:629: /work/results/ihp-sg13g2/aes/aes_ihp-sg13g2_b3c1da72_r0/5_2_route.odb] Terminated",
+        "label": "timeout",
+        "tpl": "timeout",
+        "tpl_evidence": [
+          "Total wire length on LAYER TopMetal2 = 0 um.",
+          "Total wire length on LAYER TopMetal1 = 0 um.",
+          "Total wire length on LAYER Metal5 = 37948 um."
+        ],
+        "tpl_max_proba": 0.35223981008969696
+      },
+      "aes_ihp-sg13g2_f6c4ccd8_r0": {
+        "kw": "timeout",
+        "kw_line": "make: *** [Makefile:629: /work/results/ihp-sg13g2/aes/aes_ihp-sg13g2_f6c4ccd8_r0/5_2_route.odb] Terminated",
+        "label": "timeout",
+        "tpl": "timeout",
+        "tpl_evidence": [
+          "Total wire length on LAYER TopMetal2 = 0 um.",
+          "Total wire length on LAYER TopMetal1 = 0 um.",
+          "Total wire length on LAYER Metal5 = 34340 um."
+        ],
+        "tpl_max_proba": 0.4080026189719582
+      },
+      "chi_async_bridge_asap7_11a5b960_r0": {
+        "kw": "timeout",
+        "kw_line": "make: *** [Makefile:629: /work/results/asap7/chi_async_bridge/chi_async_bridge_asap7_11a5b960_r0/5_2_route.odb] Terminated",
+        "label": "timeout",
+        "tpl": "timeout",
+        "tpl_evidence": [
+          "make: *** [Makefile:629: /work/results/asap7/chi_async_bridge/chi_async_bridge_asap7_11a5b960_r0/5_2_route.odb] Terminated",
+          "      420 |   0.1009 |  4.499022e+05 |   -0.40% |  2.63e-05 |      ",
+          "      410 |   0.1205 |  4.517173e+05 |   -0.66% |  1.79e-05 |      "
+        ],
+        "tpl_max_proba": 0.31235392505595505
+      },
+      "chi_async_bridge_asap7_44136fa3_r0": {
+        "kw": "timeout",
+        "kw_line": "make[1]: *** wait: No child processes.  Stop.",
+        "label": "timeout",
+        "tpl": "timeout",
+        "tpl_evidence": [
+          "      420 |   0.1126 |  4.918680e+05 |   -0.60% |  1.95e-05 |      ",
+          "      410 |   0.1355 |  4.948215e+05 |   -0.85% |  1.33e-05 |      ",
+          "      400 |   0.1657 |  4.990854e+05 |   -1.47% |  9.01e-06 |      "
+        ],
+        "tpl_max_proba": 0.3180773236002571
+      },
+      "gcd_sky130hd_e49b90fc_r0": {
+        "kw": "floorplan_capacity",
+        "kw_line": "[ERROR DPL-0038] Utilization greater than 100%, impossible to legalize",
+        "label": "floorplan_capacity",
+        "tpl": "out_of_memory",
+        "tpl_evidence": [
+          "      360 |   0.1055 |  3.475713e+03 |   +0.42% |  7.93e-07 |      ",
+          "      350 |   0.1238 |  3.461046e+03 |   +0.63% |  5.38e-07 |      ",
+          "      340 |   0.1458 |  3.439379e+03 |   +0.71% |  3.65e-07 |      "
+        ],
+        "tpl_max_proba": 0.3266298075094977
+      },
+      "gcd_sky130hd_f6c4ccd8_r0": {
+        "kw": "floorplan_capacity",
+        "kw_line": "[ERROR GPL-0301] Utilization 109.246 % exceeds 100%.",
+        "label": "floorplan_capacity",
+        "tpl": "out_of_memory",
+        "tpl_evidence": [
+          "      350 |   0.1120 |  4.133786e+03 |   +0.30% |  6.17e-07 |      ",
+          "      340 |   0.1334 |  4.121384e+03 |   +0.70% |  4.19e-07 |      ",
+          "      330 |   0.1626 |  4.092715e+03 |   +1.13% |  2.85e-07 |      "
+        ],
+        "tpl_max_proba": 0.35080142493755556
+      },
+      "sai_fsm_i2_o4_s2_s16_ihp-sg13g2_e49b90fc_r0": {
+        "kw": "floorplan_capacity",
+        "kw_line": "[ERROR PDN-0185] Insufficient width (52.80 um) to add straps on layer TopMetal1 in grid \"grid\" with total strap width 40.0 um and offset 13.6 um.",
+        "label": "floorplan_capacity",
+        "tpl": "floorplan_capacity",
+        "tpl_evidence": [
+          "    invoked from within",
+          "    (file \"/OpenROAD-flow-scripts/flow/scripts/run_step.tcl\" line 26)",
+          "    (file \"/OpenROAD-flow-scripts/flow/scripts/pdn.tcl\" line 6)"
+        ],
+        "tpl_max_proba": 0.5888749893177689
+      },
+      "sai_fsm_i3_o8_s3_s128_sky130hd_44136fa3_r0": {
+        "kw": "timeout",
+        "kw_line": "make: *** [Makefile:629: /work/results/sky130hd/sai_fsm_i3_o8_s3_s128/sai_fsm_i3_o8_s3_s128_sky130hd_44136fa3_r0/5_2_route.odb] Terminated",
+        "label": "timeout",
+        "tpl": "timeout",
+        "tpl_evidence": [
+          "Total wire length on LAYER met5 = 118 um.",
+          "Total wire length on LAYER met4 = 13564 um.",
+          "Total wire length on LAYER met3 = 23205 um."
+        ],
+        "tpl_max_proba": 0.47519109456431374
+      },
+      "sai_fsm_i3_o8_s3_s128_sky130hd_fdf49769_r0": {
+        "kw": "timeout",
+        "kw_line": "make[1]: *** wait: No child processes.  Stop.",
+        "label": "timeout",
+        "tpl": "timeout",
+        "tpl_evidence": [
+          "Total wire length on LAYER met5 = 920 um.",
+          "Total wire length on LAYER met4 = 13392 um.",
+          "Total wire length on LAYER met3 = 21321 um."
+        ],
+        "tpl_max_proba": 0.3984205527206702
+      },
+      "tage_update_asap7_44136fa3_r0": {
+        "kw": "unknown",
+        "kw_line": null,
+        "label": "novel",
+        "tpl": "timeout",
+        "tpl_evidence": [
+          "      400 |   0.1196 |  1.176473e+05 |   +2.26% |  5.15e-05 |      ",
+          "      390 |   0.1501 |  1.150509e+05 |   +1.39% |  3.49e-05 |      ",
+          "      380 |   0.1831 |  1.134727e+05 |   +0.38% |  2.37e-05 |      "
+        ],
+        "tpl_max_proba": 0.3905532532552524
+      },
+      "tage_update_asap7_4a3f8fd7_r0": {
+        "kw": "unknown",
+        "kw_line": null,
+        "label": "novel",
+        "tpl": "timeout",
+        "tpl_evidence": [
+          "      380 |   0.1101 |  1.129126e+05 |   +2.06% |  7.62e-05 |      ",
+          "      370 |   0.1302 |  1.106341e+05 |   +1.29% |  5.17e-05 |      ",
+          "      360 |   0.1541 |  1.092205e+05 |   +1.32% |  3.51e-05 |      "
+        ],
+        "tpl_max_proba": 0.3864798013686741
+      }
+    },
+    "S6_manifestation": {
+      "elaboration_error/duplicate_module": {
+        "failed": 11
+      },
+      "elaboration_error/undeclared_identifier": {
+        "failed": 10,
+        "success": 1
+      },
+      "elaboration_error/undefined_module": {
+        "failed": 10,
+        "success": 1
+      },
+      "elaboration_error/wrong_top": {
+        "failed": 11
+      },
+      "floorplan_capacity/core_util_high": {
+        "failed": 13
+      },
+      "floorplan_capacity/die_too_small": {
+        "failed": 13
+      },
+      "floorplan_capacity/no_whitespace": {
+        "failed": 1,
+        "success": 12
+      },
+      "missing_file/include": {
+        "failed": 11
+      },
+      "missing_file/pdn_script": {
+        "failed": 13
+      },
+      "missing_file/sdc": {
+        "failed": 13
+      },
+      "missing_file/verilog": {
+        "failed": 13
+      },
+      "none/clean": {
+        "success": 13
+      },
+      "out_of_memory/mem_30pct": {
+        "failed": 13
+      },
+      "out_of_memory/mem_55pct": {
+        "failed": 13
+      },
+      "out_of_memory/mem_80pct": {
+        "failed": 13
+      },
+      "routing_resources/three_layers": {
+        "failed": 6,
+        "success": 7
+      },
+      "routing_resources/two_layers": {
+        "failed": 9,
+        "success": 4
+      },
+      "sdc_error/bad_value": {
+        "failed": 13
+      },
+      "sdc_error/unbalanced_bracket": {
+        "failed": 13
+      },
+      "sdc_error/unknown_command": {
+        "failed": 13
+      },
+      "syntax_error/missing_semicolon": {
+        "failed": 11
+      },
+      "syntax_error/misspelled_keyword": {
+        "failed": 11
+      },
+      "syntax_error/stray_token": {
+        "failed": 11
+      },
+      "syntax_error/unbalanced_end": {
+        "failed": 11
+      },
+      "timeout/t_25pct": {
+        "timeout": 13
+      },
+      "timeout/t_50pct": {
+        "timeout": 13
+      },
+      "timeout/t_80pct": {
+        "timeout": 13
+      }
+    },
+    "n_clean_success": 13,
+    "n_labelled": 295
+  },
+  "runtime_s": 991.1,
+  "seed": 0
+}

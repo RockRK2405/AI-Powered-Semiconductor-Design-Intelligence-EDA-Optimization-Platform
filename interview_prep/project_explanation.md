@@ -1,6 +1,6 @@
 # Project Explanation (living document; only describes what actually exists)
 
-## 30-second version (as of Phase 2 and its D1 v2 round)
+## 30-second version (as of Phase 3)
 
 > SiliconAI is an ML layer on top of the open-source OpenROAD chip-design flow. It predicts how
 > long each stage of a chip-implementation run will take, with calibrated uncertainty, and it is
@@ -14,6 +14,13 @@
 > - I pre-registered a fix: a residual hybrid, tested only on 179 new runs collected afterwards. It had the lowest
 >   error, but the CI included zero (9 design groups), so I report it as not supported. What limits the
 >   evidence is the number of design families, not the number of runs.
+>
+> Phase 3 was log diagnosis. I wrote fault injectors for 8 failure classes and collected 333 real
+> ORFS runs on 13 designs. Then I tested a template-mining classifier against keyword rules I had
+> written from a single development design. The rules won clearly: macro-F1 0.97 vs 0.87 on unseen designs,
+> and 0.52 for the classifier on unseen fault variants. A post-hoc look showed the model had learned
+> *which stage a run reached*, not what went wrong. The learned part that does help is anomaly detection
+> (AUROC 0.81), so the product design is rules first, with learned novelty scoring for what the rules can't name.
 
 ## Why the project exists (research-backed)
 
@@ -64,6 +71,26 @@
 - A stale re-run directory produced a 29 s "success" whose step logs (591 s) came from an earlier stopped probe.
 - All corrections were re-parsed from the original logs and logged append-only.
 
+## Phase 3 — what I built and what I found
+
+| Piece | Design decision I can defend |
+|---|---|
+| Fault injectors | Each fault is a read-only overlay design: the base config plus an injection block, and mutated RTL/SDC copies. The original design and the tool image are never touched, and the label is fixed before the run. OOM and timeout limits are scaled to each design's measured clean run |
+| Dev design kept apart | Every injector was probed on gcd first. Injections that the flow silently absorbed (an impossible clock gives negative slack, not a failure) were dropped *before* collection. gcd is never in the test corpus |
+| Drain in the repo | Templates are learned from training runs only, and test lines are matched, never learned. That stops a held-out design leaking into the vocabulary |
+| Logs as untrusted input | Size, line and line-count caps; symlinks skipped; archives extracted with tarfile's `data` filter (path traversal tested) |
+
+**Results I can quote (docs/results_d2.md, pre-registered E5, 295 labelled failures, 13 design groups):**
+- Keyword rules (written from gcd only) reach macro-F1 **0.970** on unseen designs.
+- The template classifier reaches **0.869** on unseen designs (Δ −0.102 [−0.126, −0.078]) and **0.521** on unseen fault variants (Δ −0.450).
+- Top-3 evidence lines hit the root cause in 37% of runs, against 44% for "last 3 lines containing *error*". The rules' own trigger line hits 95%.
+- Template novelty: failed vs clean AUROC **0.81**. Novel-class detection is weak (0.61).
+- Why it lost (post hoc): number masking turned `Error 247` (killed for memory) into the same template as every `Error 2`. So the model identified OOM and timeout by how far the run got, and that breaks when the memory or time budget changes. Its evidence ranking was also filled by progress-table rows.
+
+**Data problems I found in my own corpus:**
+- On aes, copying a mutated file broke a relative `` `include ``, so 7 "syntax error" runs really failed as missing includes. I reported it, and a sensitivity check without those runs gave the same result.
+- One ORFS design uses a newer synthesis frontend whose messages neither the rules nor the model had seen. The rules said "unknown"; the model confidently said "SDC error".
+
 ## Phase 1 numbers I can quote (from my own runs; see PROGRESS.md)
 
 All from the 16-run pilot on a 4-vCPU cloud VM (`data/pilot_phase1/`). **Quote only these.**
@@ -92,6 +119,13 @@ All from the 16-run pilot on a 4-vCPU cloud VM (`data/pilot_phase1/`). **Quote o
   equivalence check failing on generated SRAMs (ORFS already disables it for cva6 for the same reason).
 
 ## Likely questions
+
+- *Your ML model lost to regexes. Why is that a result and not a failure?* The comparison was written
+  down before the data existed, and the regexes came from a separate design, so they had no unfair
+  look at the test set. On injected faults each class has a near-unique message, and a
+  one-line regex is the right tool for that. The useful finding is *where* learning helps: flagging
+  runs that look unlike any clean run, which the rules can't do. I didn't re-tune the masking after seeing the
+  result. The fix is on the backlog, to be pre-registered and tested on new data.
 
 - *Why not just use CircuitNet?* It has no confirmed runtime/memory labels, its N28 node is
   closed (not reproducible), and its tasks are image-based congestion maps (needs a GPU).

@@ -183,3 +183,62 @@ override conflicts with it. In the image, 20 design configs fix the floorplan (`
   - Secondary 4: group-OOF intervals on new rows cover 87.7% (HGB) and 82–83% (hybrid, about 10% narrower). Every CI includes 90%.
   - Secondary 5: placement information still does not help (−0.008 [−0.097, +0.084]).
   - **Conclusion:** no runtime model has been shown to beat B1 on unseen design groups. The limit is the number of design groups, not the number of runs.
+
+## Phase 3 — Log intelligence
+
+- **Status:** Implementation, D2 collection and E5 complete (2026-11-25). **Awaiting your review
+  before Phase 4.** Full results: [`docs/results_d2.md`](docs/results_d2.md).
+- **Acceptance criteria (PLAN §12):** E5 executed, per-class F1 reported. **Met.** The hypothesis
+  itself is not supported (below).
+- **Implemented features** (`src/siliconai/log_intelligence/`):
+  - **Fault injectors** (`faults.py`): 26 faults in 8 classes.
+    - A faulted design is a read-only overlay directory mounted next to the original ORFS design. It holds the base config plus an injection block, and mutated copies of RTL/SDC (ADR-017).
+    - Out-of-memory and timeout limits are scaled to each base's measured clean run. `run_orfs` gained a validated `--memory` limit.
+    - Injectors that the dev probe found masked or misattributed are listed in `MASKED_FAULTS`, not used.
+  - **Corpus collector** (`corpus.py`, `scripts/run_d2_chunk.sh`, `scripts/freeze_d2.py`): seeded plan, budgeted chunks, JSONL records, per-chunk log archives, and a freeze manifest with archive hashes.
+  - **Log loading** (`logs.py`): step logs in flow order, then the console. Logs are untrusted input: size, line and line-count caps, symlinks skipped.
+  - **Drain template miner** (`drain.py`): implemented in the repo (ADR-016). It masks paths, quoted strings, hex and numbers, but keeps message codes.
+  - **Diagnosis** (`diagnose.py`, `rules.py`):
+    - the keyword baseline;
+    - a template + TF-IDF + logistic regression classifier with evidence lines;
+    - a raw-text classifier and an SVM variant;
+    - template-novelty anomaly scoring;
+    - gold root-cause patterns.
+  - **E5 runner** (`e5.py`, `scripts/run_e5.py`): verifies archives against the manifest and extracts them with tarfile's `data` filter, which blocks path traversal (tested).
+- **Pre-registered first.** The E5 protocol (`docs/experiments.md` §11), the keyword rules and the gold patterns were committed before any D2 run was collected. They were written from the development design (gcd) only, which is never in D2.
+- **Data collected (D2 v1):**
+  - 333 runs (13 bases × 26 faults + clean, minus the RTL-frontend faults on slang bases) in chunks d2c01–d2c02, 3.3 h of flow time.
+  - Outcomes: 295 labelled failures and timeouts, 25 masked injections (excluded, as pre-registered), 13 of 13 clean runs succeeded.
+  - Frozen: `data/d2/d2_v1.manifest.json`, hash `3d6cb327b1ed3b5d`, git `50c6aca`.
+- **Results (pre-registered; `experiments/e5_3d6cb327b1ed3b5d.json`):**
+
+  | Hypothesis | Verdict | Key number |
+  |---|---|---|
+  | H5a: template classifier beats keyword rules on unseen designs and unseen fault variants | **Not supported, reversed** | Macro-F1 Δ: −0.102 [−0.126, −0.078] (designs); −0.450 [−0.479, −0.416] (variants). Keyword rules 0.970 |
+  | H5b: its top-3 evidence contains a root-cause line more often than "last 3 error lines" | **Not supported, reversed** | 0.372 vs 0.440, Δ −0.067 [−0.093, −0.045] |
+
+  - Secondary:
+    - template novelty separates failed from clean runs with AUROC 0.81;
+    - novel-class detection is weak, AUROC 0.61;
+    - the keyword rule's own trigger line is a root-cause line in 95% of runs;
+    - a linear SVM on the same features scores 0.918, still below the rules.
+  - Exploratory (post hoc, `scripts/exploratory_e5.py`):
+    - Number masking merges the OOM exit code (`Error 247`) with every `Error 2`, so the model recognises OOM and timeout by the stage the run reached. That shortcut breaks on unseen variants.
+    - The top-3 distinct evidence lines are filled by progress-table rows.
+- **Issues found (post hoc, logged in results §3):**
+  - **Injector artefact.** On aes, 7 RTL mutations broke a relative `` `include ``, so those runs failed as missing includes. Their labels are wrong. The sensitivity check gives the same verdict (Δ −0.102 [−0.126, −0.078]).
+  - **Unseen frontend.** dynamic_node uses ORFS's newer SYN frontend, whose messages neither the rules nor the model had seen. The rules say `unknown` and the model says `sdc_error` on all 7 RTL-frontend runs.
+- **Tests:** 219 passed with the Docker daemon running (217 passed + 2 Docker end-to-end tests skipped without it); ruff check and format clean.
+- **Limitations:**
+  - Injected faults are cleaner than real failures, and each class has a near-unique message, which favours rules.
+  - 13 design groups, one image, one host type.
+  - Routing has only 15 labelled runs.
+- **Next:**
+  - Your review.
+  - **Proposed for the product:** diagnosis is rules first, with the triggering line as evidence. Template novelty flags runs the rules cannot classify, and those are shown as "unfamiliar" rather than given a guessed class.
+  - **Proposed fixes, as a later pre-registered D2 v2 (TODO P3-11…P3-15):**
+    - severity-aware masking that keeps exit codes and message IDs;
+    - features restricted to error and warning lines;
+    - the include-path fix for overlays;
+    - SYN-frontend bases.
+  - **Phase 4** (RTL intelligence: pyslang + Yosys feature extractor, Verilator lint gate) per PLAN §12 can start on your go-ahead. PLAN names Phases 1–3 plus a minimal dashboard as the portfolio cut, so the alternative is consolidation first (P3-10, P2-21).

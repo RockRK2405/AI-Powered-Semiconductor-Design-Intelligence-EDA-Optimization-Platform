@@ -50,3 +50,23 @@ Each item is specific and independently checkable. IDs are stable.
 - [ ] P2-21 Dashboard: show B1 as the reference prediction with group-OOF intervals, and the hybrid next to it labelled experimental (results_d1_v2.md §4).
 - [ ] P2-22 Conformal interval width vs. horizon (left over from P2-07/P2-19).
 - [ ] P2-23 More *design groups*, not more runs: real ORFS designs on several platforms (E1b's CIs are limited by 9 scored groups). Candidates must pass a one-run probe on each platform first; tage_update/asap7 needs `LEC_CHECK=0`, as ORFS already sets for cva6.
+
+## Phase 3 — Log intelligence (complete; E5 executed, H5 not supported; follow-ups P3-10…P3-16 open)
+
+- [x] P3-01 Fault injectors (`log_intelligence/faults.py`): 26 faults in 8 classes as read-only overlay designs (ADR-017); OOM and timeout limits scaled to each base's clean run; `run_orfs --memory`.
+- [x] P3-02 Dev-design probes on gcd/nangate45 (yosys and slang frontends); masked or misattributed injectors moved to `MASKED_FAULTS` (`data/d2/probe/`).
+- [x] P3-03 E5 pre-registered (`docs/experiments.md` §11), with the keyword rules and gold patterns from dev logs only, before any D2 run.
+- [x] P3-04 Corpus collector + D2 spec (`corpus.py`, `sweeps/d2.yaml`, `scripts/run_d2_chunk.sh`).
+- [x] P3-05 Log loader with untrusted-input caps (`logs.py`); Drain implemented in the repo (`drain.py`, ADR-016).
+- [x] P3-06 Classifiers (template LogReg/SVM, raw TF-IDF), evidence lines, template-novelty anomaly score (`diagnose.py`).
+- [x] P3-07 Collect D2 v1: 333/333 runs in chunks d2c01–d2c02; frozen (hash `3d6cb327b1ed3b5d`).
+- [x] P3-08 E5 run (`experiments/e5_3d6cb327b1ed3b5d.json`); per-class F1 reported in [`docs/results_d2.md`](docs/results_d2.md). H5a and H5b not supported (keyword rules significantly better).
+- [x] P3-09 Exploratory analysis and sensitivity check (`scripts/exploratory_e5.py`), labelled post hoc.
+- [ ] P3-10 Product diagnosis = rules first with the triggering line as evidence; template novelty flags runs the rules call `unknown` (shown as "unfamiliar", no guessed class). Add to the dashboard.
+- [ ] P3-11 Fix the overlay include path: put the original source directory on the include path of mutated RTL (aes artefact, results_d2 §3). Re-probe on aes before any reuse.
+- [ ] P3-12 Rules v2: add SYN-frontend messages (`[ERROR SYN-0001]`, `error: expected`, `is not a valid top-level module`) to the keyword rules and GOLD. Judge them only on new data.
+- [ ] P3-13 Severity-aware masking: keep exit codes and message IDs (`Error 247`, `GPL-0301`); features and evidence only from error, warning, make and kill lines; rank evidence by rarity in clean runs. Pre-register it as H5' for D2 v2.
+- [ ] P3-14 D2 v2 corpus: new design groups, including SYN-frontend bases; drop or rescale `no_whitespace` and `three_layers` (mostly masked); the include fix (P3-11) applied.
+- [ ] P3-15 Measure whether template novelty flags the runs the rules call `unknown` (the dynamic_node SYN runs, the natural tage_update failures).
+- [ ] P3-16 Read the full texts of the log-diagnosis papers found at search level (EDATracer, LoFI, the GPU log-parsing paper, EDA-Debugger); blocked in this container, as P0-R1.
+
