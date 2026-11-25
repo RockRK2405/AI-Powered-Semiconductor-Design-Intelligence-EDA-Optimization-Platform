@@ -25,22 +25,26 @@ Each item is specific and independently checkable. IDs are stable.
 - [x] **P1-10** `config.py` + structured logging.
 - [x] **P1-11** Start `interview_prep/project_explanation.md` from the real Phase 1 work.
 
-## Phase 2 — Data engine + Runtime intelligence (in progress)
+## Phase 2 — Data engine + Runtime intelligence (complete; follow-ups P2-16, P2-18…21 open)
 
 - [x] P2-01 Sweep spec (YAML) + resumable sweep runner with fixed concurrency.
 - [x] P2-02 Parameterized RTL generators (adder, multiplier, FIFO, FSM, MAC array), tagged `generated`.
 - [x] P2-03 D1 v1 dataset build with horizon-tagged features + leakage tests.
 - [x] P2-04 `docs/experiments.md` protocols for E1–E4, written **before** training.
-- [ ] P2-05 Baselines, Ridge/RF/XGBoost; GroupKFold evaluation; bootstrap CIs.
+- [x] P2-05 Baselines, Ridge/RF/HGB; LOGO evaluation with inner GroupKFold; group-bootstrap CIs (E1).
 - [x] P2-06 `uncertainty/conformal.py` (split, CQR, Mondrian) + coverage property tests.
-- [ ] P2-07 Progressive (per-horizon) models; error and width vs. horizon.
-- [ ] P2-08 OOD score + abstention; risk–coverage curves.
+- [x] P2-07 Progressive (per-horizon) models; error vs. horizon (E2). *(Interval width vs. horizon not reported; folded into P2-19.)*
+- [x] P2-08 OOD score + abstention at 80%/90% coverage (E4). *(Full risk–coverage curves and the widest-interval comparison: P2-20.)*
 - [x] P2-09 Minimal Streamlit page: run browser + prediction with interval.
 - [x] P2-10 Sweep preflight: reject floorplan overrides (CORE_UTILIZATION, CORE_ASPECT_RATIO) on designs whose config fixes the floorplan (`FLOORPLAN_DEF`/`DIE_AREA`/`CORE_AREA`); found in the pilot.
 - [x] P2-11 Prune large ORFS artifacts (`objects/`, `results/`) after metrics are parsed; keep logs, reports, JSON (≈175 MB/run otherwise).
 - [x] P2-12 Chunked sweep execution (≤ 2 h per chunk) with a registry export after each chunk, so that an ephemeral container loses nothing.
 - [x] P2-13 Dataset build excludes `failed` config-error runs from runtime training sets and tags them for the log corpus.
-- [ ] P2-14 Collect D1 v1: `sweeps/d1_core.yaml` (~157 runs, ~5 chunks), then `sweeps/d1_ext.yaml` if time permits.
-- [ ] P2-15 Freeze D1 v1 (`scripts/build_dataset.py`) and run E1–E4 (`scripts/run_experiments.py`); report the results, including negative ones.
+- [x] P2-14 Collect D1 v1: `sweeps/d1_core.yaml` complete (186 runs, chunks c01–c07). *(`d1_ext` deliberately not collected: E1 showed the gap is platform × size coverage, which `d1_ext` does not fill; see P2-18.)*
+- [x] P2-15 Freeze D1 v1 (hash `ee0aebdd56278380`) and run E1–E4; results, including negative ones, in `docs/results_d1_v1.md`.
 - [ ] P2-16 Generated designs on platforms other than nangate45 (needs per-platform PDN/SDC units).
 - [x] P2-17 Data-integrity fixes found in chunk c04 (ADR-015): nested LEC timing no longer double-counted; leftover `.tmp` logs handled; clean run directories before every run; `siliconai reparse`; build refuses runs whose step times exceed wall time. Registry and Phase 1 report corrected and logged.
+- [ ] P2-18 D1 v2 sweep: mid-size (1k–5k cells) and large designs on asap7, gf180, ihp-sg13g2 and sky130hd; fewer gcd configs; more design groups. Depends on P2-16.
+- [ ] P2-19 Pre-register and run, on D1 v2: residual hybrid (B1 + HGB on residuals) vs B1 vs HGB; interval width vs. horizon; E2 repeated with the better model.
+- [ ] P2-20 E4 follow-ups: an OOD score based on platform × size support; risk–coverage curves; comparison with abstaining on the widest CQR/Mondrian intervals.
+- [ ] P2-21 Dashboard: show the B1 prediction next to HGB, since B1 is the better point model on D1 v1.

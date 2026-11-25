@@ -115,6 +115,14 @@ record stores that hash. Adding runs creates D1 v2; results are never silently m
 - **Light interactive work** (editing, unit tests) shared the VM during collection. Phase 1 noise
   measurements cover this regime, but it is uncontrolled.
 
+## 9. Exploratory analyses (not pre-registered)
+
+Analyses chosen after seeing a result live in `scripts/exploratory_*.py`, write
+`experiments/exploratory_*.json` with `"exploratory": true`, and are reported in a separate,
+labelled section. They can motivate a new pre-registered experiment on new data, never a claim.
+
+Results on D1 v1: [`results_d1_v1.md`](results_d1_v1.md).
+
 ## Change log
 
 | Date | Change | Reason |
@@ -124,3 +132,4 @@ record stores that hash. Adding runs creates D1 v2; results are never silently m
 | 2026-11-24 (before any data or result) | §4: the primary comparison is **HGB (the pre-declared main model, ADR-005) vs the better of B0/B1**. Ridge and RF are reported as secondary | Choosing the best of three candidates after seeing test errors would bias the comparison toward H1 |
 | 2026-11-24 (before any data or result) | §6: E3 uses HGB with fixed hyperparameters (learning_rate 0.1, max_leaf_nodes 15, min_samples_leaf 5) and CQR uses the same settings with quantile loss | Keeps E3's nested group-OOF calibration affordable; E3 is about calibration, not accuracy |
 | 2026-11-25 (first E1 attempt crashed before producing any number) | HGB models drop feature columns that are entirely missing in the training rows (`DropAllMissing`) | scikit-learn 1.9.1's HGB crashes while binning an all-NaN column, which happens when a LOGO fold's training groups never report some metric. The column carries no information, so the model is unchanged in substance |
+| 2026-11-25 (after E4 ran) | E4's secondary comparison against "abstaining on the widest conformal intervals" was not implemented | Group-OOF intervals have constant width, so the comparison is degenerate for method (ii); it was not part of the H4 criterion. Reported as a deviation; TODO P2-20 |

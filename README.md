@@ -2,12 +2,13 @@
 
 **AI-Powered Semiconductor Design Intelligence & EDA Optimization Platform**
 
-> **Project status: Phase 2 in progress (data engine + runtime intelligence).** Phase 1 delivered
-> a hardened EDA runner, a digest-pinned ORFS Docker wrapper, log/metric parsers, a SQLite run
-> registry and a measured pilot ([`data/pilot_phase1/`](data/pilot_phase1/)). Phase 2 has added a
-> resumable sweep engine, RTL generators, a leakage-safe dataset builder, conformal prediction and
-> pre-registered experiments ([`docs/experiments.md`](docs/experiments.md)). Dataset D1 is being
-> collected. **No model results are reported yet.**
+> **Project status: Phase 2 complete, awaiting review.**
+> - Phase 1 delivered a hardened EDA runner, a digest-pinned ORFS Docker wrapper, parsers, a SQLite run registry and a measured pilot ([`data/pilot_phase1/`](data/pilot_phase1/)).
+> - Phase 2 collected dataset D1 v1: 175 successful real ORFS runs, 16 design groups, 5 platforms.
+> - Phase 2 then ran the pre-registered experiments E1–E4 ([`docs/experiments.md`](docs/experiments.md)). **Results ([`docs/results_d1_v1.md`](docs/results_d1_v1.md)):**
+>   - On unseen designs a log-linear baseline beats gradient boosting for route and total runtime (H1 not supported).
+>   - For a 90% target, group-aware conformal intervals reach 92–94% coverage on unseen designs, where naive conformal drops to 53–57% (H3 supported).
+>   - H2 and H4 are not supported on this data.
 
 ## What this project is
 
@@ -23,7 +24,7 @@ SiliconAI is a planned intelligence layer on top of an **open-source RTL-to-GDS 
 - prioritize verification regression tests;
 - combine all of this into evidence-grounded recommendations and, eventually, a copilot.
 
-## Research contribution (approved direction; results pending)
+## Research contribution (approved direction; first results in)
 
 *Uncertainty-aware, cross-stage prediction of open-flow cost and risk, evaluated on unseen
 designs*, plus a **fault-injected, labelled corpus of open-EDA failure logs**. See
@@ -61,6 +62,8 @@ Set `SILICONAI_ORFS_IMAGE` to the digest above to reproduce our tool versions ex
 | [`tests/`](tests/) | Unit tests + EDA integration tests (marker `eda`) |
 | [`sweeps/`](sweeps/) | Sweep specs for dataset D1 |
 | [`docs/experiments.md`](docs/experiments.md) | Pre-registered protocols for E1–E4 |
+| [`docs/results_d1_v1.md`](docs/results_d1_v1.md) / [`experiments/`](experiments/) | E1–E4 results on D1 v1 and the raw experiment records |
+| [`data/d1/`](data/d1/) | D1 run registry (JSONL), per-chunk logs, frozen `d1_v1.parquet` + manifest, `corrections.jsonl` |
 | [`scripts/`](scripts/) | Pilot, probe, chunk runner, dataset freeze, experiment runner |
 | [`data/pilot_phase1/`](data/pilot_phase1/) | Measured pilot results (CSV + report), regenerable with `scripts/pilot_report.py` |
 | [`interview_prep/`](interview_prep/) | Explanations grounded in what is actually built |

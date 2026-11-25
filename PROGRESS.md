@@ -111,3 +111,53 @@ override conflicts with it. In the image, 20 design configs fix the floorplan (`
   - The pilot covered 4 ORFS designs on 2 platforms; no generated designs yet.
 - **Next:** Phase 2 (data engine + runtime intelligence), gated on your approval, plus two decisions:
   the dataset machine and the license (P0-D1).
+
+## Phase 2 — Data engine + runtime intelligence
+
+- **Status:** Implementation and first experiments complete (2026-11-25). **Awaiting your review
+  before Phase 3.** Full results: [`docs/results_d1_v1.md`](docs/results_d1_v1.md).
+- **Implemented features**
+  - **Sweep engine:**
+    - YAML sweep specs.
+    - Deterministic, resumable plans with a floorplan-compatibility preflight.
+    - Budgeted ≤ 2 h chunks with a registry export after each chunk (`scripts/run_chunk.sh`).
+    - Outputs of an earlier attempt are cleared before every run.
+    - Large ORFS artifacts are pruned after parsing.
+  - **RTL generators** (adder tree, ALU, CRC, FIFO, FSM, MAC array, multiplier), tagged `generated`.
+  - **Dataset builder:**
+    - Horizon-tagged features, with leakage tests.
+    - Refuses mixed tool images or hosts.
+    - Refuses runs whose step times exceed wall time.
+  - **Models and uncertainty:** baselines B0/B1, Ridge/RF/HGB, LOGO evaluation with inner GroupKFold selection and group-bootstrap CIs; conformal methods (split, group-OOF, CQR, Mondrian); OOD scoring and selective risk.
+  - **Pre-registered protocols E1–E4** ([`docs/experiments.md`](docs/experiments.md)), written before any data existed.
+  - **Tooling:** `siliconai reparse`/`forget` with an append-only `corrections.jsonl`, and a minimal Streamlit dashboard.
+- **Data collected (D1 v1):**
+  - 186 runs (10.4 h of flow time) in chunks c01–c07.
+  - 175 successful runs: 44 designs, 16 design groups, 5 platforms. Also 8 failed and 3 timeout runs.
+  - Frozen as `data/d1/d1_v1.parquet`, hash `ee0aebdd56278380`.
+  - Logs are archived per chunk in `data/d1/logs/`.
+- **Results (pre-registered; numbers from `experiments/*.json`):**
+
+  | Hypothesis | Verdict | Key number |
+  |---|---|---|
+  | H1: learned model beats baselines on unseen designs | **Not supported**, and reversed on the primary endpoints | Route MAE (ln): B1 0.397 vs HGB 0.586; total: 0.327 vs 0.474 |
+  | H2: observing more stages improves downstream prediction | **Not supported** | Route, h_place − h_synth: −0.076 [−0.191, +0.074] |
+  | H3: naive conformal fails on unseen designs; group-aware restores coverage | **Supported** | Naive 53–57% under LOGO; group-OOF 92–94% |
+  | H4: OOD abstention reduces large errors | **Not supported** | CIs include 0 at 80% and 90% coverage |
+
+  - Secondary: HGB beats B1 on place/cts/finish peak memory (CIs exclude 0).
+  - Exploratory (not pre-registered): HGB's loss comes from sparse platform × size coverage. Outside nangate45 there are no mid-size designs.
+- **Tests:** 155 passed; ruff check and format clean.
+- **Issues found and fixed during Phase 2 (all logged):**
+  - Nested LEC timing was double-counted, plus stale re-run outputs and unrecognized `.tmp` logs (ADR-015). Both registries were re-parsed and the Phase 1 table corrected.
+  - The scikit-learn 1.9.1 HGB crash on all-missing training columns (change log in `docs/experiments.md`).
+  - One container restart mid-chunk: no data lost; the post-restart runs were checked against repeats (results §1).
+- **Limitations:**
+  - One VM type.
+  - 16 design groups, so CIs are wide.
+  - Generated RTL only on nangate45.
+  - `d1_ext` not collected.
+  - E4's widest-interval comparison not implemented.
+- **Next:**
+  - Your review.
+  - Proposed: before Phase 3, a short D1 v2 round. Pre-register the hybrid vs B1 vs HGB comparison, then collect generated and mid-size designs on the other four platforms (P2-16, P2-18). Alternatively, move straight to Phase 3 (log intelligence: fault injectors, the D2 failure-log corpus, E5) and treat D1 v2 as later work. Phase 2's acceptance criteria (E1–E4 executed with reported numbers; leakage tests pass) are met either way.

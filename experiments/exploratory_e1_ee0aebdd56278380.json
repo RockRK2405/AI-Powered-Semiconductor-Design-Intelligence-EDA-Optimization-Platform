@@ -1,0 +1,270 @@
+{
+  "dataset_hash": "ee0aebdd56278380",
+  "exploratory": true,
+  "targets": {
+    "y__route__ln_wall": {
+      "mae": {
+        "b1": 0.3969843290453189,
+        "hgb": 0.5476412252314506,
+        "hybrid": 0.35551430077014323
+      },
+      "mae_other_rows": {
+        "b1": 0.4022153535153255,
+        "hgb": 0.5463015009609105,
+        "hybrid": 0.3675392422509173
+      },
+      "mae_rows_in_groups_with_out_of_range_targets": {
+        "b1": 0.3655981822252788,
+        "hgb": 0.5556795708546918,
+        "hybrid": 0.2833646518854994
+      },
+      "n_rows_in_out_of_range_groups": 25,
+      "per_group": {
+        "aes": {
+          "mae_b1": 0.33996326341107763,
+          "mae_hgb": 0.4289181456041996,
+          "mae_hybrid": 0.2235983238487277,
+          "n": 16,
+          "share_outside_train_range": 0.0625
+        },
+        "dynamic_node": {
+          "mae_b1": 0.4605292540315815,
+          "mae_hgb": 0.31039668125569286,
+          "mae_hybrid": 0.36893432946511173,
+          "n": 4,
+          "share_outside_train_range": 0.0
+        },
+        "gcd": {
+          "mae_b1": 0.336523389053641,
+          "mae_hgb": 0.6291330254500832,
+          "mae_hybrid": 0.38028750548882345,
+          "n": 44,
+          "share_outside_train_range": 0.0
+        },
+        "gen_addtree": {
+          "mae_b1": 0.5757107915664376,
+          "mae_hgb": 0.6804133196696822,
+          "mae_hybrid": 0.3137877208009237,
+          "n": 9,
+          "share_outside_train_range": 0.0
+        },
+        "gen_alu": {
+          "mae_b1": 0.3472217381199552,
+          "mae_hgb": 0.4366521809237741,
+          "mae_hybrid": 0.6607940652488767,
+          "n": 9,
+          "share_outside_train_range": 0.0
+        },
+        "gen_crc": {
+          "mae_b1": 0.4111713712283031,
+          "mae_hgb": 0.7810332157444557,
+          "mae_hybrid": 0.3896159017286492,
+          "n": 9,
+          "share_outside_train_range": 0.4444444444444444
+        },
+        "gen_fifo": {
+          "mae_b1": 0.3369037606048031,
+          "mae_hgb": 0.3308728445751321,
+          "mae_hybrid": 0.2369189244892789,
+          "n": 9,
+          "share_outside_train_range": 0.0
+        },
+        "gen_fsm": {
+          "mae_b1": 1.0169235688205918,
+          "mae_hgb": 0.6098991662082606,
+          "mae_hybrid": 0.7191513494169113,
+          "n": 9,
+          "share_outside_train_range": 0.0
+        },
+        "gen_mac": {
+          "mae_b1": 0.5485421912955449,
+          "mae_hgb": 0.301353415611464,
+          "mae_hybrid": 0.20058336776164964,
+          "n": 9,
+          "share_outside_train_range": 0.0
+        },
+        "gen_mult": {
+          "mae_b1": 0.38327026983128676,
+          "mae_hgb": 0.2570099044797724,
+          "mae_hybrid": 0.17031801474373476,
+          "n": 9,
+          "share_outside_train_range": 0.0
+        },
+        "ibex": {
+          "mae_b1": 0.2133175267653449,
+          "mae_hgb": 0.42157161416850986,
+          "mae_hybrid": 0.1386875616408293,
+          "n": 13,
+          "share_outside_train_range": 0.0
+        },
+        "jpeg": {
+          "mae_b1": 0.2321121660507132,
+          "mae_hgb": 0.17588956390790647,
+          "mae_hybrid": 0.22452611184031213,
+          "n": 3,
+          "share_outside_train_range": 0.0
+        },
+        "picorv32": {
+          "mae_b1": 0.21907069801308143,
+          "mae_hgb": 0.492686741258199,
+          "mae_hybrid": 0.3488508663180341,
+          "n": 4,
+          "share_outside_train_range": 0.0
+        },
+        "riscv32i": {
+          "mae_b1": 0.1938663753077341,
+          "mae_hgb": 0.9110400057824641,
+          "mae_hybrid": 0.26860727109374083,
+          "n": 12,
+          "share_outside_train_range": 0.0
+        },
+        "spi": {
+          "mae_b1": 0.7333277583956301,
+          "mae_hgb": 0.9204691909012693,
+          "mae_hybrid": 0.7186394362474422,
+          "n": 9,
+          "share_outside_train_range": 0.0
+        },
+        "uart": {
+          "mae_b1": 0.219130363322471,
+          "mae_hgb": 0.3257754839498909,
+          "mae_hybrid": 0.37793650209154583,
+          "n": 7,
+          "share_outside_train_range": 0.0
+        }
+      }
+    },
+    "y__total__ln_wall": {
+      "mae": {
+        "b1": 0.3265047075165429,
+        "hgb": 0.45636746612126833,
+        "hybrid": 0.25724533564634217
+      },
+      "mae_other_rows": {
+        "b1": 0.3357684215798413,
+        "hgb": 0.46496979439501096,
+        "hybrid": 0.27358553707381644
+      },
+      "mae_rows_in_groups_with_out_of_range_targets": {
+        "b1": 0.26207978698542206,
+        "hgb": 0.39654218312660433,
+        "hybrid": 0.14360666208254344
+      },
+      "n_rows_in_out_of_range_groups": 22,
+      "per_group": {
+        "aes": {
+          "mae_b1": 0.3155005875115619,
+          "mae_hgb": 0.2640985364255634,
+          "mae_hybrid": 0.19874177454706354,
+          "n": 16,
+          "share_outside_train_range": 0.0
+        },
+        "dynamic_node": {
+          "mae_b1": 0.4969985049539527,
+          "mae_hgb": 0.11143192614010955,
+          "mae_hybrid": 0.30853613769440846,
+          "n": 4,
+          "share_outside_train_range": 0.0
+        },
+        "gcd": {
+          "mae_b1": 0.26924068678872914,
+          "mae_hgb": 0.4620790543792918,
+          "mae_hybrid": 0.27535274124342146,
+          "n": 44,
+          "share_outside_train_range": 0.0
+        },
+        "gen_addtree": {
+          "mae_b1": 0.5437736508540736,
+          "mae_hgb": 0.6309824163399698,
+          "mae_hybrid": 0.25493964864993224,
+          "n": 9,
+          "share_outside_train_range": 0.0
+        },
+        "gen_alu": {
+          "mae_b1": 0.20390829823959125,
+          "mae_hgb": 0.34952082046985306,
+          "mae_hybrid": 0.4089763799940084,
+          "n": 9,
+          "share_outside_train_range": 0.0
+        },
+        "gen_crc": {
+          "mae_b1": 0.2446414612819597,
+          "mae_hgb": 0.38497017171423653,
+          "mae_hybrid": 0.16664200194778836,
+          "n": 9,
+          "share_outside_train_range": 0.3333333333333333
+        },
+        "gen_fifo": {
+          "mae_b1": 0.30262304878727236,
+          "mae_hgb": 0.2781144713149477,
+          "mae_hybrid": 0.12874626169852327,
+          "n": 9,
+          "share_outside_train_range": 0.0
+        },
+        "gen_fsm": {
+          "mae_b1": 0.7278491805998377,
+          "mae_hgb": 0.4668617415223992,
+          "mae_hybrid": 0.5148951198364269,
+          "n": 9,
+          "share_outside_train_range": 0.0
+        },
+        "gen_mac": {
+          "mae_b1": 0.5359218974075852,
+          "mae_hgb": 0.2314772005400606,
+          "mae_hybrid": 0.14011951109453763,
+          "n": 9,
+          "share_outside_train_range": 0.0
+        },
+        "gen_mult": {
+          "mae_b1": 0.3515510531731473,
+          "mae_hgb": 0.14342725473588924,
+          "mae_hybrid": 0.10941543972302191,
+          "n": 9,
+          "share_outside_train_range": 0.0
+        },
+        "ibex": {
+          "mae_b1": 0.274152474010896,
+          "mae_hgb": 0.4045535756428589,
+          "mae_hybrid": 0.12765911909891234,
+          "n": 13,
+          "share_outside_train_range": 0.07692307692307693
+        },
+        "jpeg": {
+          "mae_b1": 0.1264783528285968,
+          "mae_hgb": 0.476321599590021,
+          "mae_hybrid": 0.14357541475615201,
+          "n": 3,
+          "share_outside_train_range": 0.0
+        },
+        "picorv32": {
+          "mae_b1": 0.07277416597559627,
+          "mae_hgb": 0.43008698031275916,
+          "mae_hybrid": 0.18856285058408218,
+          "n": 4,
+          "share_outside_train_range": 0.0
+        },
+        "riscv32i": {
+          "mae_b1": 0.1519976528147219,
+          "mae_hgb": 1.5396776497956235,
+          "mae_hybrid": 0.20197273063638033,
+          "n": 12,
+          "share_outside_train_range": 0.0
+        },
+        "spi": {
+          "mae_b1": 0.551074094893407,
+          "mae_hgb": 0.5527977566087101,
+          "mae_hybrid": 0.5724357197216562,
+          "n": 9,
+          "share_outside_train_range": 0.0
+        },
+        "uart": {
+          "mae_b1": 0.14930861303596776,
+          "mae_hgb": 0.090502341574763,
+          "mae_hybrid": 0.36495006762120197,
+          "n": 7,
+          "share_outside_train_range": 0.0
+        }
+      }
+    }
+  }
+}

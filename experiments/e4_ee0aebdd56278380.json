@@ -1,0 +1,61 @@
+{
+  "dataset": "data/d1/d1_v1.parquet",
+  "dataset_hash": "ee0aebdd56278380",
+  "design_groups": 16,
+  "experiment": "e4",
+  "finished_at": "2026-11-25T03:42:12.253240+00:00",
+  "git_sha": "7cc2e90329a81f4aa15d2e77bda39a75d8293fe9",
+  "protocol": "docs/experiments.md",
+  "result": {
+    "H4_supported": false,
+    "targets": {
+      "y__route__ln_wall": {
+        "coverage_0.8": {
+          "ood_abstention": 0.5428571428571428,
+          "ood_minus_random_ci": [
+            -0.07334920028849012,
+            0.04702808448267855
+          ],
+          "random_abstention_mean": 0.5774499999999999,
+          "supported": false
+        },
+        "coverage_0.9": {
+          "ood_abstention": 0.5569620253164557,
+          "ood_minus_random_ci": [
+            -0.045239378897526834,
+            0.03111556950540741
+          ],
+          "random_abstention_mean": 0.577367088607595,
+          "supported": false
+        },
+        "overall_large_error_rate": 0.5771428571428572,
+        "supported": false
+      },
+      "y__total__ln_wall": {
+        "coverage_0.8": {
+          "ood_abstention": 0.38571428571428573,
+          "ood_minus_random_ci": [
+            -0.052108292551050095,
+            0.05002948682914536
+          ],
+          "random_abstention_mean": 0.38307142857142856,
+          "supported": false
+        },
+        "coverage_0.9": {
+          "ood_abstention": 0.36075949367088606,
+          "ood_minus_random_ci": [
+            -0.06133385441769044,
+            0.03730939621165502
+          ],
+          "random_abstention_mean": 0.38236708860759505,
+          "supported": false
+        },
+        "overall_large_error_rate": 0.38285714285714284,
+        "supported": false
+      }
+    }
+  },
+  "rows": 175,
+  "runtime_s": 0.3,
+  "seed": 0
+}

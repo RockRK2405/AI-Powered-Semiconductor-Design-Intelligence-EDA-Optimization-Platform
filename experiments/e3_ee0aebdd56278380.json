@@ -1,0 +1,171 @@
+{
+  "dataset": "data/d1/d1_v1.parquet",
+  "dataset_hash": "ee0aebdd56278380",
+  "design_groups": 16,
+  "experiment": "e3",
+  "finished_at": "2026-11-25T03:42:11.917527+00:00",
+  "git_sha": "7cc2e90329a81f4aa15d2e77bda39a75d8293fe9",
+  "protocol": "docs/experiments.md",
+  "result": {
+    "H3": {
+      "y__route__ln_wall": {
+        "group_aware_restores": true,
+        "naive_covers_random": true,
+        "naive_undercovers_logo": true,
+        "supported": true
+      },
+      "y__total__ln_wall": {
+        "group_aware_restores": true,
+        "naive_covers_random": true,
+        "naive_undercovers_logo": true,
+        "supported": true
+      }
+    },
+    "alpha": 0.1,
+    "targets": {
+      "y__route__ln_wall": {
+        "logo": {
+          "cqr_group_oof": {
+            "coverage": 0.8971428571428571,
+            "coverage_ci": [
+              0.8511826441102757,
+              0.9378550555230859
+            ],
+            "mean_width_ln": 2.612753397282478
+          },
+          "group_oof": {
+            "coverage": 0.9428571428571428,
+            "coverage_ci": [
+              0.876982868771,
+              0.9903416149068323
+            ],
+            "mean_width_ln": 2.670828354975187
+          },
+          "mondrian_platform": {
+            "coverage": 0.9028571428571428,
+            "coverage_ci": [
+              0.8344325125315576,
+              0.9642857142857143
+            ],
+            "mean_width_ln": 2.405213844788978
+          },
+          "naive_split": {
+            "coverage": 0.5257142857142857,
+            "coverage_ci": [
+              0.37659643849600183,
+              0.7083522727272726
+            ],
+            "mean_width_ln": 1.062516391808863
+          }
+        },
+        "random5": {
+          "cqr_group_oof": {
+            "coverage": 0.9771428571428571,
+            "coverage_ci": [
+              0.9526315789473684,
+              1.0
+            ],
+            "mean_width_ln": 2.2589948120712005
+          },
+          "group_oof": {
+            "coverage": 0.9828571428571429,
+            "coverage_ci": [
+              0.9677375762859635,
+              1.0
+            ],
+            "mean_width_ln": 2.6902348832918688
+          },
+          "mondrian_platform": {
+            "coverage": 0.9885714285714285,
+            "coverage_ci": [
+              0.9774011299435028,
+              1.0
+            ],
+            "mean_width_ln": 2.3529626624352393
+          },
+          "naive_split": {
+            "coverage": 0.9257142857142857,
+            "coverage_ci": [
+              0.884890996293874,
+              0.9675377042312526
+            ],
+            "mean_width_ln": 1.6519993948849345
+          }
+        }
+      },
+      "y__total__ln_wall": {
+        "logo": {
+          "cqr_group_oof": {
+            "coverage": 0.8628571428571429,
+            "coverage_ci": [
+              0.7947265770810004,
+              0.9312564212328767
+            ],
+            "mean_width_ln": 1.8713140321147816
+          },
+          "group_oof": {
+            "coverage": 0.92,
+            "coverage_ci": [
+              0.7822906211664994,
+              1.0
+            ],
+            "mean_width_ln": 2.417281094785911
+          },
+          "mondrian_platform": {
+            "coverage": 0.8857142857142857,
+            "coverage_ci": [
+              0.7651403743315508,
+              0.9655505810630595
+            ],
+            "mean_width_ln": 2.198739236968443
+          },
+          "naive_split": {
+            "coverage": 0.5657142857142857,
+            "coverage_ci": [
+              0.45918268085444297,
+              0.71521335238873
+            ],
+            "mean_width_ln": 0.835675508175602
+          }
+        },
+        "random5": {
+          "cqr_group_oof": {
+            "coverage": 0.96,
+            "coverage_ci": [
+              0.9419642857142857,
+              0.9860164141414142
+            ],
+            "mean_width_ln": 1.720857629665754
+          },
+          "group_oof": {
+            "coverage": 0.9771428571428571,
+            "coverage_ci": [
+              0.9518595885323827,
+              1.0
+            ],
+            "mean_width_ln": 2.2019014583255774
+          },
+          "mondrian_platform": {
+            "coverage": 0.9885714285714285,
+            "coverage_ci": [
+              0.9774011299435028,
+              1.0
+            ],
+            "mean_width_ln": 1.9903140545026772
+          },
+          "naive_split": {
+            "coverage": 0.9142857142857143,
+            "coverage_ci": [
+              0.849460746210649,
+              0.9634256538348515
+            ],
+            "mean_width_ln": 1.1248451967702657
+          }
+        }
+      }
+    }
+  },
+  "rows": 175,
+  "runtime_s": 587.2,
+  "seed": 0
+}

@@ -116,3 +116,8 @@ with tab_predict:
         "groups · horizon: after synthesis. Coverage across all runs is evaluated in E3 "
         "(docs/experiments.md); a single run inside or outside its interval says little."
     )
+    st.info(
+        "On D1 v1 this gradient-boosting model is **less accurate** than a simple log-linear "
+        "baseline (cells + platform) on route and total time for unseen designs, while its "
+        "group-aware 90% intervals do hold their coverage. See docs/results_d1_v1.md."
+    )
