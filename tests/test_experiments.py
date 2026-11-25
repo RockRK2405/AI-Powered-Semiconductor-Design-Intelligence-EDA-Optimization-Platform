@@ -9,6 +9,7 @@ import pytest
 from siliconai.runtime_intelligence.experiments import (
     ood_scores_logo,
     run_e1,
+    run_e1b,
     run_e2,
     run_e3,
     run_e4,
@@ -20,6 +21,7 @@ FAST = {
     "ridge": [{"alpha": 1.0}],
     "rf": [{"n_estimators": 20}],
     "hgb": [{"max_iter": 30, "min_samples_leaf": 3}],
+    "hybrid": [{"max_iter": 30, "min_samples_leaf": 3}],
 }
 
 
@@ -40,6 +42,7 @@ def table(n_groups=7, per=8, seed=0):
                     "meta__run_id": f"g{gi}_{r}",
                     "meta__design_group": f"g{gi}",
                     "meta__platform": plat,
+                    "meta__origin": "orfs" if gi % 2 else "generated",
                     "plat__nangate45": float(plat == "nangate45"),
                     "plat__sky130hd": float(plat == "sky130hd"),
                     "origin__gen": 0.0,
@@ -107,3 +110,28 @@ def test_predict_unseen_never_trains_on_the_runs_group():
     assert res["actual"] > 0 and isinstance(res["covered"], bool)
     with pytest.raises(ValueError):
         predict_unseen(df, "nope", "y__route__ln_wall")
+
+
+def test_e1b_scores_only_new_rows():
+    df = table()
+    seen = set(df.loc[df["meta__design_group"].isin(["g0", "g1", "g2"]), "meta__run_id"])
+    seen |= set(df["meta__run_id"].iloc[::2])  # half of the other groups' rows are "old"
+    res = run_e1b(df, seen, grids=FAST)
+    n_new = int((~df["meta__run_id"].isin(seen)).sum())
+    for target in ("y__route__ln_wall", "y__total__ln_wall"):
+        r = res["targets"][target]
+        assert r["n_new"] == n_new
+        assert r["new_rows"]["hybrid"]["n"] == n_new
+        assert r["all_rows"]["b1"]["n"] == len(df)
+        assert sum(v["n"] for v in r["new_rows_by_platform"].values()) == n_new
+        assert isinstance(r["supported"], bool)
+        for m in ("hgb", "hybrid"):
+            assert 0.0 <= r["group_oof_intervals_new"][m]["coverage"] <= 1.0
+    assert isinstance(res["H1b_supported"], bool)
+    assert "ci_hi" in res["hybrid_route_h_place_minus_h_synth_mae_new"]
+
+
+def test_e1b_refuses_when_nothing_is_new():
+    df = table()
+    with pytest.raises(ValueError):
+        run_e1b(df, set(df["meta__run_id"]), grids=FAST, with_intervals=False)

@@ -291,3 +291,94 @@ def _boot_selective(abs_err, score, g, cov, seed, n_boot=1000) -> list[float]:
         rand = float(np.mean(e > LARGE_ERROR))  # expected rate under random abstention
         diffs.append(selective_large_error(e, s, cov) - rand)
     return [float(np.percentile(diffs, 2.5)), float(np.percentile(diffs, 97.5))]
+
+
+# ------------------------------------------------------------------------------------ E1b
+E1B_MODELS = ("b1", "hgb", "hybrid")
+
+
+def _mae(err: np.ndarray) -> float | None:
+    return float(np.mean(err)) if err.size else None
+
+
+def _group_oof_intervals(name, x, y, g, te_mask, seed, params) -> tuple[np.ndarray, np.ndarray]:
+    """E3 method (ii) with ``name`` as point model, for the rows in ``te_mask`` (LOGO outer)."""
+    cols = list(x.columns)
+    lo, hi = np.full(len(y), np.nan), np.full(len(y), np.nan)
+
+    def fp(a, b, c):
+        a, c = pd.DataFrame(a, columns=cols), pd.DataFrame(c, columns=cols)
+        return make_model(name, seed=seed, **params).fit(a, b).predict(c)
+
+    for grp in np.unique(g[te_mask]):
+        te, tr = g == grp, g != grp
+        scores = np.abs(group_oof_predictions(fp, x[tr], y[tr], g[tr]) - y[tr])
+        q = conformal_quantile(scores, ALPHA)
+        p = make_model(name, seed=seed, **params).fit(x[tr], y[tr]).predict(x[te])
+        lo[te], hi[te] = p - q, p + q
+    return lo, hi
+
+
+def run_e1b(
+    df: pd.DataFrame,
+    seen_run_ids: set[str],
+    seed: int = 0,
+    grids: dict | None = None,
+    with_intervals: bool = True,
+) -> dict:
+    """H1b (docs/experiments.md §10): hybrid vs B1 on rows absent from D1 v1, under LOGO."""
+    grids = grids or {}
+    out: dict[str, dict] = {}
+    for target in PRIMARY_TARGETS:
+        x, y, g, sub = _xyg(df, PRIMARY_HORIZON, target)
+        new = ~sub["meta__run_id"].isin(seen_run_ids).to_numpy()
+        if not new.any():
+            raise ValueError(f"{target}: no new rows to score")
+        pred = {m: logo_oof(m, x, y, g, seed=seed, grid=grids.get(m)).pred for m in E1B_MODELS}
+        err = {m: np.abs(p - y) for m, p in pred.items()}
+        primary = group_bootstrap_diff(err["hybrid"][new], err["b1"][new], g[new], seed=seed)
+        res: dict = {
+            "n_new": int(new.sum()),
+            "n_new_groups": int(np.unique(g[new]).size),
+            "new_rows": {m: point_metrics(y[new], pred[m][new]) for m in E1B_MODELS},
+            "hybrid_minus_b1_mae_new": primary,
+            "supported": primary["ci_hi"] < 0,
+            "hgb_minus_b1_mae_new": group_bootstrap_diff(
+                err["hgb"][new], err["b1"][new], g[new], seed=seed
+            ),
+            "all_rows": {m: point_metrics(y, pred[m]) for m in E1B_MODELS},
+        }
+        for key in ("meta__origin", "meta__platform", "meta__design_group"):
+            vals = sub[key].to_numpy()
+            res[f"new_rows_by_{key.removeprefix('meta__')}"] = {
+                str(v): {
+                    "n": int((new & (vals == v)).sum()),
+                    **{m: _mae(err[m][new & (vals == v)]) for m in E1B_MODELS},
+                }
+                for v in np.unique(vals[new])
+            }
+        if with_intervals:
+            res["group_oof_intervals_new"] = {}
+            for m in ("hgb", "hybrid"):
+                lo, hi = _group_oof_intervals(m, x, y, g, new, seed, E3_PARAMS)
+                res["group_oof_intervals_new"][m] = {
+                    "coverage": coverage(y[new], lo[new], hi[new]),
+                    "coverage_ci": _group_boot_coverage(y[new], lo[new], hi[new], g[new], seed),
+                    "mean_width_ln": mean_width(lo[new], hi[new]),
+                }
+        out[target] = res
+    # secondary 5: E2 with the hybrid (route; h_place vs h_synth) on the new rows
+    target = "y__route__ln_wall"
+    e2 = {}
+    for horizon in ("h_synth", "h_place"):
+        x, y, g, sub = _xyg(df, horizon, target)
+        new = ~sub["meta__run_id"].isin(seen_run_ids).to_numpy()
+        p = logo_oof("hybrid", x, y, g, seed=seed, grid=grids.get("hybrid")).pred
+        e2[horizon] = (np.abs(p - y)[new], g[new])
+    (a, ga), (b, _) = e2["h_place"], e2["h_synth"]
+    return {
+        "horizon": PRIMARY_HORIZON,
+        "targets": out,
+        "H1b_supported": all(v["supported"] for v in out.values()),
+        "hybrid_route_h_place_minus_h_synth_mae_new": group_bootstrap_diff(a, b, ga, seed=seed),
+    }

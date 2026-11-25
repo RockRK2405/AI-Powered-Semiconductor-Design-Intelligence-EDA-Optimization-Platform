@@ -1,6 +1,8 @@
 """Run pre-registered experiments E1-E4 on a frozen dataset and record them (ADR-006).
 
 Usage: python scripts/run_experiments.py --data data/d1/d1_v1.parquet [--only e1,e3]
+       python scripts/run_experiments.py --data data/d1/d1_v2.parquet --only e1b \
+           --seen data/d1/d1_v1.parquet
 
 Each experiment writes experiments/<exp>_<dataset-hash>.json with params, dataset hash, git
 SHA and seed. Numbers quoted anywhere in the docs must come from these files.
@@ -51,6 +53,9 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--only", default="e1,e2,e3,e4")
     parser.add_argument("--out-dir", type=Path, default=Path("experiments"))
+    parser.add_argument(
+        "--seen", type=Path, help="E1b: earlier frozen dataset whose rows are not scored"
+    )
     args = parser.parse_args()
     df = pd.read_parquet(args.data)
     data_hash = content_hash(df)
@@ -60,7 +65,7 @@ def main() -> None:
     args.out_dir.mkdir(parents=True, exist_ok=True)
     wanted = set(args.only.split(","))
     e1_oof = None
-    for name in ("e1", "e2", "e3", "e4"):
+    for name in ("e1", "e2", "e3", "e4", "e1b"):
         if name not in wanted and not (name == "e1" and "e4" in wanted):
             continue
         t0 = time.monotonic()
@@ -70,6 +75,15 @@ def main() -> None:
                 continue
         elif name == "e2":
             result = ex.run_e2(df, seed=args.seed)
+        elif name == "e1b":
+            if args.seen is None:
+                raise SystemExit("e1b needs --seen (the earlier frozen dataset)")
+            seen = pd.read_parquet(args.seen)
+            seen_manifest = json.loads(args.seen.with_suffix(".manifest.json").read_text())
+            if seen_manifest["content_hash"] != content_hash(seen):
+                raise SystemExit("--seen dataset does not match its manifest hash")
+            result = ex.run_e1b(df, set(seen["meta__run_id"]), seed=args.seed)
+            result["seen_dataset"] = {"file": str(args.seen), "hash": content_hash(seen)}
         elif name == "e3":
             result = ex.run_e3(df, seed=args.seed)
         else:

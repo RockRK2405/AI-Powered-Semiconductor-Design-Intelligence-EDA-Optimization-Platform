@@ -79,6 +79,44 @@ class DropAllMissing(BaseEstimator, TransformerMixin):
         return np.asarray(x)[:, self.keep_]
 
 
+class ResidualHybrid(BaseEstimator, RegressorMixin):
+    """B1 (log-linear in synth cells + platform), then HGB on B1's residuals (E1b).
+
+    B1 carries the size trend shared across platforms, which trees cannot extrapolate when a
+    platform has few large designs. HGB then models what B1 misses.
+    """
+
+    def __init__(
+        self,
+        learning_rate: float = 0.1,
+        max_leaf_nodes: int = 15,
+        min_samples_leaf: int = 5,
+        max_iter: int = 300,
+        random_state: int = 0,
+    ) -> None:
+        self.learning_rate = learning_rate
+        self.max_leaf_nodes = max_leaf_nodes
+        self.min_samples_leaf = min_samples_leaf
+        self.max_iter = max_iter
+        self.random_state = random_state
+
+    def fit(self, x: pd.DataFrame, y: np.ndarray) -> ResidualHybrid:
+        y = np.asarray(y, dtype=float)
+        self.base_ = LogLinearCells().fit(x, y)
+        self.resid_ = make_model(
+            "hgb",
+            seed=self.random_state,
+            learning_rate=self.learning_rate,
+            max_leaf_nodes=self.max_leaf_nodes,
+            min_samples_leaf=self.min_samples_leaf,
+            max_iter=self.max_iter,
+        ).fit(x, y - self.base_.predict(x))
+        return self
+
+    def predict(self, x: pd.DataFrame) -> np.ndarray:
+        return self.base_.predict(x) + self.resid_.predict(x)
+
+
 def _platform_of(x: pd.DataFrame) -> np.ndarray:
     plat_cols = [c for c in x.columns if c.startswith("plat__")]
     if not plat_cols:
@@ -112,6 +150,8 @@ def make_model(name: str, seed: int = 0, **params: object) -> BaseEstimator:
             DropAllMissing(),
             HistGradientBoostingRegressor(**{"max_iter": 300, "random_state": seed, **params}),
         )
+    if name == "hybrid":
+        return ResidualHybrid(**{"random_state": seed, **params})
     if name == "hgb_q":  # quantile model for CQR; pass quantile=...
         return make_pipeline(
             DropAllMissing(),
@@ -129,6 +169,7 @@ GRIDS: dict[str, dict[str, list]] = {
     "rf": {"min_samples_leaf": [1, 3], "max_features": [0.33, 1.0]},
     "hgb": {"learning_rate": [0.05, 0.1], "max_leaf_nodes": [7, 15], "min_samples_leaf": [5, 10]},
 }
+GRIDS["hybrid"] = GRIDS["hgb"]  # E1b: the residual HGB uses the E1 grid
 
 
 def grid_points(name: str) -> Iterable[dict]:

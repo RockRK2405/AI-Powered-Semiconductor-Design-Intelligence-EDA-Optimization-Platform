@@ -113,3 +113,31 @@ def test_hgb_tolerates_a_column_missing_in_every_training_row(name):
     model = make_model(name, max_iter=20, **kw).fit(x, y)
     test = pd.DataFrame({"a": [0.0, 1.0], "gone": [3.0, np.nan]})
     assert np.isfinite(model.predict(test)).all()
+
+
+def test_residual_hybrid_shares_the_size_trend_across_platforms():
+    # Platform B has only small designs in training; a large B design must still be predicted
+    # from the size trend learned on platform A plus B's offset; trees cannot add the two.
+    rng = np.random.default_rng(1)
+    rows = []
+    for plat, sizes in (
+        ("a", np.exp(rng.uniform(5, 10, 80))),
+        ("b", np.exp(rng.uniform(5, 6.5, 40))),
+    ):
+        for c in sizes:
+            rows.append(
+                {
+                    SYNTH_CELLS: c,
+                    "plat__a": float(plat == "a"),
+                    "plat__b": float(plat == "b"),
+                    "y": np.log(c) + (0.7 if plat == "b" else 0.0),
+                }
+            )
+    train = pd.DataFrame(rows)
+    test = pd.DataFrame({SYNTH_CELLS: [np.exp(9.5)], "plat__a": [0.0], "plat__b": [1.0]})
+    truth = 9.5 + 0.7
+    x = train.drop(columns="y")
+    hyb = make_model("hybrid", max_iter=50).fit(x, train["y"].to_numpy()).predict(test)[0]
+    hgb = make_model("hgb", max_iter=50).fit(x, train["y"].to_numpy()).predict(test)[0]
+    assert abs(hyb - truth) < 0.3
+    assert abs(hgb - truth) > 0.5  # trees cap at the largest training size (no offset shift)
