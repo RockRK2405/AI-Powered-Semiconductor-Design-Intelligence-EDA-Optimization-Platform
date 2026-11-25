@@ -61,6 +61,7 @@ ALLOWED_OVERRIDES = frozenset(
 )
 
 TIMEOUT_EXIT_CODE = 124  # coreutils `timeout`
+MIN_MEMORY_MB, MAX_MEMORY_MB = 64, 65536
 GENERATED_PREFIX = "sai_"  # generated designs; can never shadow a bundled ORFS design
 _MOUNT_PATH_RE = re.compile(r"^/[A-Za-z0-9_./\-]+$")
 
@@ -132,12 +133,21 @@ def build_docker_argv(
     inner_timeout_s: int,
     cpuset: str | None = None,
     design_dir: Path | None = None,
+    memory_mb: int | None = None,
 ) -> list[str]:
-    """Build the `docker run` argument list for one ORFS job."""
+    """Build the `docker run` argument list for one ORFS job.
+
+    ``memory_mb`` caps the container's memory (swap included), so exceeding it gets the
+    tools OOM-killed. Used to inject the out-of-memory fault class (Phase 3).
+    """
     if inner_timeout_s <= 0:
         raise ValueError("inner_timeout_s must be positive")
     if cpuset is not None and not re.fullmatch(r"[0-9,\-]{1,32}", cpuset):
         raise ValueError(f"invalid cpuset: {cpuset!r}")
+    if memory_mb is not None and not (
+        isinstance(memory_mb, int) and MIN_MEMORY_MB <= memory_mb <= MAX_MEMORY_MB
+    ):
+        raise ValueError(f"invalid memory_mb: {memory_mb!r}")
     argv = [
         "docker",
         "run",
@@ -158,6 +168,8 @@ def build_docker_argv(
     ]
     if cpuset:
         argv += ["--cpuset-cpus", cpuset]
+    if memory_mb is not None:
+        argv += ["--memory", f"{memory_mb}m", "--memory-swap", f"{memory_mb}m"]
     if design_dir is not None:
         argv += design_mount_args(job, design_dir)
     argv += [
@@ -188,6 +200,7 @@ def run_orfs(
     timeout_s: int,
     cpuset: str | None = None,
     design_dir: Path | None = None,
+    memory_mb: int | None = None,
 ) -> ToolResult:
     """Execute one ORFS job. Timing per step is parsed separately from ORFS logs."""
     work_dir = Path(work_dir)
@@ -199,6 +212,7 @@ def run_orfs(
         inner_timeout_s=timeout_s,
         cpuset=cpuset,
         design_dir=design_dir,
+        memory_mb=memory_mb,
     )
     console_log = work_dir / "console" / f"{job.variant}.log"
     # Outer timeout is a backstop for the inner coreutils timeout.

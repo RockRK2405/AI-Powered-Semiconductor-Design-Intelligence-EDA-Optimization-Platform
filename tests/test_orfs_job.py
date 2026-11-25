@@ -121,3 +121,18 @@ def test_generated_design_mount_rejects_unsafe_dirs(tmp_path, dirname):
     job = OrfsJob(design_config="./designs/nangate45/sai_x/config.mk", variant="v1")
     with pytest.raises(ValueError):
         design_mount_args(job, d)
+
+
+def test_docker_argv_memory_limit(tmp_path):
+    job = OrfsJob(design_config="./designs/nangate45/gcd/config.mk", variant="v1")
+    argv = build_docker_argv(job, work_dir=tmp_path, image="i", inner_timeout_s=1, memory_mb=512)
+    i = argv.index("--memory")
+    assert argv[i : i + 4] == ["--memory", "512m", "--memory-swap", "512m"]
+    assert argv.index("--memory") < argv.index("i")  # before the image name
+
+
+@pytest.mark.parametrize("bad", [0, 10, 10**6, "512", 512.0, True])
+def test_docker_argv_rejects_bad_memory(tmp_path, bad):
+    job = OrfsJob(design_config="./designs/nangate45/gcd/config.mk", variant="v1")
+    with pytest.raises(ValueError):
+        build_docker_argv(job, work_dir=tmp_path, image="i", inner_timeout_s=1, memory_mb=bad)
