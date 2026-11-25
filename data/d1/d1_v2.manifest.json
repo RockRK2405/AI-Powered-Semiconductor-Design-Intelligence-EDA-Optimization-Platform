@@ -1,0 +1,39 @@
+{
+  "columns": 844,
+  "content_hash": "3f601a94fdbaf60d",
+  "design_groups": [
+    "aes",
+    "dynamic_node",
+    "ethmac",
+    "gcd",
+    "gen_addtree",
+    "gen_alu",
+    "gen_crc",
+    "gen_fifo",
+    "gen_fsm",
+    "gen_mac",
+    "gen_mult",
+    "ibex",
+    "jpeg",
+    "mock_alu",
+    "picorv32",
+    "riscv32i",
+    "spi",
+    "uart"
+  ],
+  "designs": 139,
+  "file": "d1_v2.parquet",
+  "platforms": [
+    "asap7",
+    "gf180",
+    "ihp-sg13g2",
+    "nangate45",
+    "sky130hd"
+  ],
+  "registry_status_counts": {
+    "failed": 11,
+    "success": 354,
+    "timeout": 7
+  },
+  "rows": 354
+}
