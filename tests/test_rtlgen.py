@@ -214,4 +214,18 @@ def test_write_orfs_design_layout_and_idempotence(tmp_path):
     write_orfs_design(d, "nangate45", tmp_path)
     assert (out / "rtl.v").stat().st_mtime_ns == mtime
     with pytest.raises(ValueError):
-        write_orfs_design(d, "asap7", tmp_path)
+        write_orfs_design(d, "sky130hs", tmp_path)
+
+
+@pytest.mark.parametrize(
+    ("platform", "period"),
+    [("asap7", "1860"), ("gf180", "18"), ("ihp-sg13g2", "9"), ("sky130hd", "6.6")],
+)
+def test_generated_clock_period_scales_with_platform(tmp_path, platform, period):
+    # alu's nangate45 period is 1.5 ns; scaled by gcd period ratios (asap7 SDC is in ps)
+    d = generate("alu", {"width": 8})
+    out = write_orfs_design(d, platform, tmp_path)
+    assert f"set clk_period {period}\n" in (out / "constraint.sdc").read_text()
+    cfg = (out / "config.mk").read_text()
+    assert f"export PLATFORM = {platform}" in cfg
+    assert "PDN_TCL" not in cfg  # nangate45's grid file must not leak to other platforms

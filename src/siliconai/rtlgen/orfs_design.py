@@ -13,12 +13,28 @@ from siliconai.rtlgen.generators import GeneratedDesign
 
 # Platforms supported for generated designs, with platform-specific config lines.
 # nangate45: small blocks need a finer power grid; we reuse the one ORFS ships for gcd.
+# The other platforms' bundled gcd uses the platform's default power grid, so we do too.
 PLATFORM_EXTRAS: dict[str, list[str]] = {
     "nangate45": [
         "export PDN_TCL ?= $(DESIGN_HOME)/nangate45/gcd/grid_strategy-M1-M4-M7.tcl",
     ],
+    "asap7": [],
+    "gf180": [],
+    "ihp-sg13g2": [],
+    "sky130hd": [],
 }
-TIME_UNIT_SCALE = {"nangate45": 1.0}  # SDC time unit per platform (ns = 1.0)
+
+# Generator clock periods were chosen for nangate45. On another platform they are scaled by
+# the ratio of that platform's bundled gcd clock period to nangate45's (0.25 ns), so timing
+# pressure stays comparable: asap7 310 ps, gf180 3 ns, ihp-sg13g2 1.5 ns, sky130hd 1.1 ns
+# (ORFS image 620c13d9). Values are in each platform's SDC time unit (asap7: ps).
+PERIOD_SCALE = {
+    "nangate45": 1.0,
+    "asap7": 0.31 / 0.25 * 1000.0,
+    "gf180": 3.0 / 0.25,
+    "ihp-sg13g2": 1.5 / 0.25,
+    "sky130hd": 1.1 / 0.25,
+}
 
 SDC_TEMPLATE = """current_design {name}
 
@@ -65,7 +81,7 @@ def write_orfs_design(design: GeneratedDesign, platform: str, root: Path) -> Pat
         "export PLACE_DENSITY_LB_ADDON ?= 0.20",
         *PLATFORM_EXTRAS[platform],
     ]
-    period = design.clock_period_ns * TIME_UNIT_SCALE[platform]
+    period = round(design.clock_period_ns * PERIOD_SCALE[platform], 6)
     files = {
         "rtl.v": design.verilog,
         "constraint.sdc": SDC_TEMPLATE.format(name=design.name, period=f"{period:g}"),

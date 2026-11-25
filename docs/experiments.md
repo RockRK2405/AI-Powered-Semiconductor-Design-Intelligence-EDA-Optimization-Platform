@@ -123,6 +123,48 @@ labelled section. They can motivate a new pre-registered experiment on new data,
 
 Results on D1 v1: [`results_d1_v1.md`](results_d1_v1.md).
 
+## 10. E1b — H1b: does the residual hybrid beat the baseline on *new* data? (D1 v2)
+
+**Written 2026-11-25, after the D1 v1 results and before any D1 v2 run was collected.** The
+hybrid was found in an exploratory analysis of D1 v1 (§9, `docs/results_d1_v1.md` §6). So it is
+judged only on rows that did not exist when it was proposed.
+
+- **Hypothesis H1b.** On unseen design groups, at horizon `h_synth`, the residual hybrid (B1, then
+  HGB on B1's residuals) predicts route and total-flow wall time more accurately than B1.
+- **Data: D1 v2** = every D1 v1 run plus the runs from `sweeps/gen_validate_v2.yaml` and
+  `sweeps/d1_v2.yaml`.
+  - The §0 inclusion rules apply: same image, host CPU model, 4 CPUs and concurrency 1.
+  - Purpose of the new runs: generated designs on asap7, gf180, ihp-sg13g2 and sky130hd (clock periods
+    scaled per platform, see `rtlgen/orfs_design.py`), larger generated sizes, and bundled ORFS designs
+    not in D1 v1. No new gcd runs.
+- **Stopping rule.** D1 v2 is frozen when `d1_v2.yaml` is complete or after 5 collection chunks,
+  whichever comes first. No model is fitted to any new row before the freeze.
+- **Split.** LOGO over `design_group`, exactly as in E1. Training uses every row of the other
+  groups, old and new.
+- **Scored rows (primary).** Only **new rows**: runs absent from `d1_v1.parquet`. Rows from D1 v1
+  shaped the hypothesis, so they are not used to judge it.
+- **Models.**
+  - B1, unchanged.
+  - HGB as in E1.
+  - **Hybrid:** B1 fitted on the training rows, then HGB fitted to B1's residuals. HGB hyperparameters
+    are chosen from the E1 grid by inner GroupKFold(5) on the training groups.
+  - Seed 0.
+- **Primary endpoints.** MAE of ln(wall) for route and total flow, on the new rows.
+- **Uncertainty.** Paired group bootstrap (2,000 replicates) of ΔMAE = MAE(hybrid) − MAE(B1), resampling
+  the design groups that have new rows.
+- **H1b is supported** only if the 95% CI of ΔMAE lies entirely below 0 for **both** endpoints.
+- **Secondary (reported, not judged):**
+  1. HGB − B1 on the new rows: does better platform × size coverage remove HGB's deficit?
+  2. All three models on all D1 v2 rows.
+  3. Results split by origin (ORFS vs generated) and by platform.
+  4. Group-OOF conformal (E3 method ii, 90%) with the hybrid as point model, against HGB as point model:
+     coverage and mean width on the new rows.
+  5. E2 repeated with the hybrid: route MAE at `h_place` minus at `h_synth`, on the new rows.
+- **Threats.**
+  - The new generated rows belong to existing groups (`gen_*`), so the unseen-*group* test for them
+    is about a family the model has never seen on any platform, as in E1.
+  - New bundled ORFS designs are few. Their per-group results will be reported individually.
+
 ## Change log
 
 | Date | Change | Reason |
