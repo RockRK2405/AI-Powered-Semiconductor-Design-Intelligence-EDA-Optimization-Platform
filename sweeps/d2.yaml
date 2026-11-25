@@ -1,0 +1,85 @@
+# D2: fault-injected failure-log corpus (Phase 3; protocol in docs/experiments.md §11).
+# Every base gets every fault in siliconai.log_intelligence.faults.FAULTS (26 faults + clean),
+# minus its skip list. gcd is the development design and is NOT a base here.
+# ref_wall_s / ref_peak_mb: median wall time and peak step RSS of the base's default-config
+# successful runs in D1 (registry, image 620c13d9); out-of-memory and timeout faults scale to them.
+seed: 20261126
+cap_s: 1800          # timeout for non-timeout faults: min(cap, max(300 s, 3 x ref_wall_s))
+bases:
+  # --- bundled ORFS designs (yosys frontend) ---
+  - name: aes_cipher_top
+    group: aes
+    platform: nangate45
+    sources: [src/aes/aes_cipher_top.v, src/aes/aes_inv_cipher_top.v, src/aes/aes_inv_sbox.v,
+              src/aes/aes_key_expand_128.v, src/aes/aes_rcon.v, src/aes/aes_sbox.v,
+              src/aes/timescale.v]
+    top_file: src/aes/aes_cipher_top.v
+    sdc: nangate45/aes/constraint.sdc
+    ref_wall_s: 306
+    ref_peak_mb: 924
+  - name: dynamic_node_top_wrap
+    group: dynamic_node
+    platform: nangate45
+    sources: [src/dynamic_node/dynamic_node.pickle.v]
+    top_file: src/dynamic_node/dynamic_node.pickle.v
+    sdc: nangate45/dynamic_node/constraint.sdc
+    ref_wall_s: 313
+    ref_peak_mb: 885
+  - name: riscv
+    group: riscv32i
+    platform: gf180
+    sources: [src/riscv32i/adder.v, src/riscv32i/alu.v, src/riscv32i/aludec.v,
+              src/riscv32i/controller.v, src/riscv32i/datapath.v, src/riscv32i/dmem.v,
+              src/riscv32i/flopenr.v, src/riscv32i/flopens.v, src/riscv32i/flopr.v,
+              src/riscv32i/magcompare2b.v, src/riscv32i/magcompare2c.v,
+              src/riscv32i/magcompare32.v, src/riscv32i/maindec.v, src/riscv32i/mux2.v,
+              src/riscv32i/mux3.v, src/riscv32i/mux4.v, src/riscv32i/mux5.v, src/riscv32i/mux8.v,
+              src/riscv32i/regfile.v, src/riscv32i/riscv.v, src/riscv32i/rom.v,
+              src/riscv32i/shifter.v, src/riscv32i/signext.v, src/riscv32i/top.v]
+    top_file: src/riscv32i/riscv.v
+    sdc: gf180/riscv32i/constraint.sdc
+    ref_wall_s: 275
+    ref_peak_mb: 600
+  - name: spi
+    group: spi
+    platform: ihp-sg13g2
+    sources: [src/spi/spi.v]
+    top_file: src/spi/spi.v
+    sdc: ihp-sg13g2/spi/constraint.sdc
+    ref_wall_s: 66
+    ref_peak_mb: 517
+  # --- bundled ORFS designs (slang frontend): RTL-frontend faults skipped, because slang's
+  # diagnostics never reach the logs in this image (dev probe 5: one identical line for all) ---
+  - name: picorv32
+    group: picorv32
+    platform: nangate45
+    slang: true
+    sources: [src/picorv32/picorv32.sv]
+    top_file: src/picorv32/picorv32.sv
+    sdc: nangate45/picorv32/constraint.sdc
+    ref_wall_s: 283
+    ref_peak_mb: 969
+  - name: uart
+    group: uart
+    platform: asap7
+    slang: true
+    sources: [src/uart/uart.v, src/uart/uart_rx.v, src/uart/uart_tx.v]
+    top_file: src/uart/uart.v
+    sdc: asap7/uart/constraint.sdc
+    ref_wall_s: 54
+    ref_peak_mb: 682
+  # --- generated designs (synthetic RTL, yosys frontend), one per family ---
+  - {generate: {family: addtree, params: {inputs: 8, width: 8}}, group: gen_addtree,
+     platform: gf180, ref_wall_s: 26, ref_peak_mb: 414}
+  - {generate: {family: alu, params: {width: 8}}, group: gen_alu,
+     platform: asap7, ref_wall_s: 35, ref_peak_mb: 636}
+  - {generate: {family: crc, params: {width: 8}}, group: gen_crc,
+     platform: sky130hd, ref_wall_s: 27, ref_peak_mb: 439}
+  - {generate: {family: fifo, params: {depth: 8, width: 8}}, group: gen_fifo,
+     platform: ihp-sg13g2, ref_wall_s: 28, ref_peak_mb: 507}
+  - {generate: {family: fsm, params: {inputs: 2, outputs: 4, seed: 2, states: 16}}, group: gen_fsm,
+     platform: nangate45, ref_wall_s: 21, ref_peak_mb: 546}
+  - {generate: {family: mac, params: {lanes: 2, width: 8}}, group: gen_mac,
+     platform: gf180, ref_wall_s: 28, ref_peak_mb: 417}
+  - {generate: {family: mult, params: {width: 8}}, group: gen_mult,
+     platform: nangate45, ref_wall_s: 20, ref_peak_mb: 545}

@@ -52,8 +52,12 @@ def test_text_transforms():
 
 
 def test_transforms_refuse_when_nothing_to_change():
+    assert drop_end("module m;\nendmodule\n") == "module m;\n  end\nendmodule\n"
+    assert drop_semicolon("module m (input a);\n  foo u ();\nendmodule") == (
+        "module m (input a);\n  foo u ()\nendmodule"
+    )
     with pytest.raises(ValueError):
-        drop_end("module m; endmodule")
+        drop_semicolon("module m\nendmodule")
     with pytest.raises(ValueError):
         stray_token(TOY_V, "other")
 

@@ -1,0 +1,20 @@
+# Natural (not injected) failures from D1 collection, labelled by reading their logs during
+# D1 collection (see PROGRESS.md and results_d1_v2.md), committed before any E5 model was fitted.
+# Used only as a small external sanity check in E5 (docs/experiments.md §11, secondary S5).
+# "novel" = a cause outside the D2 taxonomy. The 6 pilot-era aes/nangate45 failures have no
+# console log and are not included.
+# Caveat: gcd is the D2 development design (gcd/nangate45 dev logs were read); the two
+# gcd/sky130hd runs are on another platform, but the design is the same.
+runs:
+  aes_ihp-sg13g2_44136fa3_r0: timeout            # 1,800 s cap, detailed route
+  aes_ihp-sg13g2_b3c1da72_r0: timeout
+  aes_ihp-sg13g2_f6c4ccd8_r0: timeout
+  chi_async_bridge_asap7_11a5b960_r0: timeout
+  chi_async_bridge_asap7_44136fa3_r0: timeout
+  sai_fsm_i3_o8_s3_s128_sky130hd_44136fa3_r0: timeout
+  sai_fsm_i3_o8_s3_s128_sky130hd_fdf49769_r0: timeout
+  gcd_sky130hd_e49b90fc_r0: floorplan_capacity   # utilization > 100% at legalization
+  gcd_sky130hd_f6c4ccd8_r0: floorplan_capacity   # utilization > 100% at global placement
+  sai_fsm_i2_o4_s2_s16_ihp-sg13g2_e49b90fc_r0: floorplan_capacity  # core too narrow for PDN straps
+  tage_update_asap7_44136fa3_r0: novel           # post-CTS LEC cannot load SRAM macros
+  tage_update_asap7_4a3f8fd7_r0: novel

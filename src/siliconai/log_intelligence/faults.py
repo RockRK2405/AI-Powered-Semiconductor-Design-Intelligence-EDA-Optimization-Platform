@@ -111,13 +111,19 @@ def _module_header_end(text: str, top: str) -> int:
 
 
 def drop_semicolon(text: str) -> str:
-    """Remove the ';' of the last assignment-like statement."""
+    """Remove the ';' of the last assignment-like statement (else of the last statement)."""
     lines = text.split("\n")
-    for i in range(len(lines) - 1, -1, -1):
-        s = lines[i].rstrip()
-        if s.endswith(";") and ("=" in s) and not s.lstrip().startswith(("//", "parameter")):
-            lines[i] = s[:-1]
-            return "\n".join(lines)
+
+    def is_stmt(s: str) -> bool:
+        t = s.lstrip()
+        return s.endswith(";") and not t.startswith(("//", "`", "parameter", "localparam", ");"))
+
+    for want_assign in (True, False):
+        for i in range(len(lines) - 1, -1, -1):
+            s = lines[i].rstrip()
+            if is_stmt(s) and ("=" in s or not want_assign):
+                lines[i] = s[:-1]
+                return "\n".join(lines)
     raise ValueError("no statement ending in ';'")
 
 
@@ -132,10 +138,11 @@ def stray_token(text: str, top: str) -> str:
 
 
 def drop_end(text: str) -> str:
-    """Remove the last block-closing ``end`` (begin/end becomes unbalanced)."""
+    """Make begin/end unbalanced: remove the last block-closing ``end``, or, in a design with
+    no such line, add a stray one before the last ``endmodule``."""
     ms = list(re.finditer(r"^[ \t]*end[ \t]*(//[^\n]*)?$", text, re.MULTILINE))
     if not ms:
-        raise ValueError("no standalone 'end' line")
+        return insert_before_endmodule(text, "  end")
     m = ms[-1]
     return text[: m.start()] + text[m.end() :]
 
@@ -309,7 +316,7 @@ MASKED_FAULTS: dict[tuple[str, str], Injector] = {
     ("timing_infeasible", "impossible_clock"): _timing_impossible_clock,
     ("sdc_error", "unknown_clock"): _sdc_unknown_clock,  # STA-0138 warning only
     ("floorplan_capacity", "near_full"): _util_near_full,  # same FLW-0024 as core_util_high
-    ("routing_congestion", "one_layer"): _congestion_layers(1),  # ODB-0137 config error
+    ("routing_resources", "one_layer"): _congestion_layers(1),  # ODB-0137 config error
 }
 
 # (class, variant) -> injector. The taxonomy follows research/03 G3; which of these actually
@@ -333,8 +340,8 @@ FAULTS: dict[tuple[str, str], Injector] = {
     ("floorplan_capacity", "core_util_high"): _util_core_util_high,
     ("floorplan_capacity", "no_whitespace"): _util_no_whitespace,
     ("floorplan_capacity", "die_too_small"): _util_die_too_small,
-    ("routing_congestion", "two_layers"): _congestion_layers(2),
-    ("routing_congestion", "three_layers"): _congestion_layers(3),
+    ("routing_resources", "two_layers"): _congestion_layers(2),
+    ("routing_resources", "three_layers"): _congestion_layers(3),
     ("out_of_memory", "mem_30pct"): _oom(0.30),
     ("out_of_memory", "mem_55pct"): _oom(0.55),
     ("out_of_memory", "mem_80pct"): _oom(0.80),

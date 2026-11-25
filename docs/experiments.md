@@ -165,6 +165,80 @@ judged only on rows that did not exist when it was proposed.
     is about a family the model has never seen on any platform, as in E1.
   - New bundled ORFS designs are few. Their per-group results will be reported individually.
 
+## 11. E5 — H5: log diagnosis on held-out designs and fault variants (D2)
+
+**Written 2026-11-25, after the development-design probes and before any D2 run was collected.**
+Code: `src/siliconai/log_intelligence/` (`faults.py`, `corpus.py`, `logs.py`, `rules.py`,
+`drain.py`); data spec `sweeps/d2.yaml`.
+
+- **Hypothesis H5** (research/04): a template + classifier diagnosis beats a keyword baseline on
+  held-out designs *and* held-out fault variants (H5a), and puts a root-cause line in its top 3
+  (H5b).
+- **Development data, kept apart.**
+  - gcd/nangate45 is the development design. It is probed with every injector (yosys and slang frontends; `data/d2/probe/`) and is never part of D2.
+  - The keyword baseline and the gold root-cause patterns (`rules.py`) were written from the dev logs only and committed with this section.
+- **Data: D2** = every (base, fault) pair of `sweeps/d2.yaml`:
+  - 13 base designs, one per design group. 6 are bundled ORFS designs on 4 platforms and 7 are generated families on 5 platforms.
+  - Each base gets 26 faults in 8 classes, plus 1 clean run.
+  - The 2 slang-frontend bases skip the 9 RTL-frontend faults. In this image slang writes the same single line for all of them (dev probe 5), so no log-based method could separate them.
+  - 333 planned runs, one at a time, same image and host type as D1.
+  - Out-of-memory and timeout limits are scaled to each base's D1 clean run (peak RSS, wall time).
+- **Stopping rule.** D2 is frozen when the plan is complete or after 6 collection chunks,
+  whichever comes first. No model is fitted to any D2 run before the freeze.
+- **Unit and input.** One run is one example. The input is the run's ORFS step logs in flow order,
+  followed by its console log, loaded with the caps in `logs.py`. Nothing else is used: no exit
+  code, no config.
+- **Labels.**
+  - A run whose status is `failed` or `timeout` is labelled with its *injected* class, decided before it ran.
+  - **Masked** injections (the flow still succeeded) are excluded from classification; their rate is reported per (class, variant).
+  - Clean runs that succeed form the `success` set, used for the anomaly endpoint. A clean run that fails is excluded and reported.
+- **Classes (8):**
+  - syntax_error, elaboration_error, missing_file, sdc_error;
+  - floorplan_capacity (utilization/density/outline too small for cells or power grid);
+  - routing_resources (too few routing layers; the dev probe shows either `GRT-0232` congestion or a detailed-router crash);
+  - out_of_memory;
+  - timeout.
+  - The dev probe found these injections masked or misattributed, so they are not in D2: impossible clock, warning-only SDC errors, low `PLACE_DENSITY`, routing-layer adjustment, and a single routing layer (a configuration error).
+- **Models.** All fixed: no tuning on D2. Seed 0.
+  - **B-kw:** `rules.keyword_predict`. Ordered regex rules; `unknown` counts as wrong.
+  - **M-tpl (the learned model under test):**
+    - Drain (depth 4, similarity 0.5) is fitted on the training runs' lines.
+    - Each run becomes a template-count vector. Test-run lines that match no learned template are ignored.
+    - TF-IDF (sublinear tf, smoothed idf), then logistic regression (C = 1, balanced class weights).
+  - **Secondary:**
+    - M-raw: TF-IDF of masked word uni- and bigrams (min_df 2), then the same logistic regression.
+    - M-svc: linear SVM (C = 1, balanced) on M-tpl's features.
+- **Splits.**
+  - **S-design:** leave one design group out (13 folds).
+  - **S-variant:** for each (class, variant), train on all other labelled runs and test on that (class, variant). Every class has ≥ 2 variants, so every labelled run is predicted exactly once.
+- **Primary endpoints.**
+  - **P1:** macro-F1 over the 8 classes under S-design. Δ = F1(M-tpl) − F1(B-kw). 95% CI by group bootstrap: 2,000 replicates, resampling design groups and recomputing both macro-F1s on the pooled rows.
+  - **P2:** the same under S-variant. The bootstrap still resamples design groups, because rows are clustered by design.
+  - **P3 (evidence):** top-3 hit rate under S-design. A run is a hit if one of its 3 evidence lines matches `rules.GOLD[true class]`. Runs whose log contains no gold line are excluded (count reported).
+    - M-tpl ranks a run's lines by the coefficient of their template for the *predicted* class (later line first on ties) and keeps 3 distinct texts.
+    - The baseline B-ev is `rules.error_line_evidence`: the last 3 distinct lines containing "error".
+    - Δ = hit(M-tpl) − hit(B-ev), with a group-bootstrap CI.
+- **Criteria.**
+  - **H5a** is supported only if the CI lower bound is > 0 for **both** P1 and P2.
+  - **H5b** is supported only if the CI lower bound for P3 is > 0.
+  - H5 = H5a and H5b. Each is reported separately.
+- **Secondary (reported, not judged).**
+  1. M-raw and M-svc against M-tpl, on both splits.
+  2. Per-class F1, confusion matrices, and macro-F1 by origin (ORFS vs generated).
+  3. Anomaly detection.
+     - (a) The score is the share of a run's lines whose template does not occur in the clean runs of the training groups. AUROC for failed vs clean under S-design.
+     - (b) Novel-class detection: for each class c and group g, train M-tpl without class c and group g, then score group g's runs by 1 − max class probability. AUROC for class-c runs (novel) against the others (known), pooled.
+  4. B-kw's triggering line as an evidence list of length 1: its hit rate.
+  5. The 12 natural D1 failures in `data/d2/natural/` (labels committed with this section):
+     - M-tpl is trained on all labelled D2 runs, and B-kw is applied as is;
+     - each run is reported individually with its prediction and top-3 evidence; for the 2 `novel` runs, the max probability.
+  6. The manifestation table: outcome of every (class, variant) per base.
+- **Threats.**
+  - **The data:** injected faults are cleaner than real failures. One tool image, one host type, 13 design groups.
+  - **The baseline is tuned on dev logs:** this favours B-kw, a deliberate strong-baseline choice.
+  - **The gold patterns share an author with B-kw:** they are close to its rules. So S4 favours B-kw, which is why P3 compares against the generic error-line heuristic instead.
+  - **The natural failures were read before their labels were fixed.** Some keyword-rule prefixes, GPL and IFP, come from general ORFS knowledge and were not seen in the dev logs. S5 is a sanity check, not evidence.
+
 ## Change log
 
 | Date | Change | Reason |
